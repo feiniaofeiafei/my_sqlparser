@@ -1,0 +1,355 @@
+Terminals unused in grammar
+
+   STRING
+   UPDATE
+   SET
+   CREATE
+   TABLE
+   SELECT
+   GROUP
+   BY
+   HAVING
+   VARCHAR
+   INTEGER
+
+
+语法
+
+    0 $accept: preparable_statement $end
+
+    1 preparable_statement: delete_statement
+    2                     | truncate_statement
+    3                     | insert_statement
+
+    4 delete_statement: DELETE FROM table_name
+
+    5 truncate_statement: TRUNCATE table_name
+
+    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')'
+
+    7 opt_column_list: '(' ident_commalist ')'
+    8                | %empty
+
+    9 ident_commalist: IDENTIFIER
+   10                | ident_commalist ',' IDENTIFIER
+
+   11 literal_list: literal
+   12             | literal_list ',' literal
+
+   13 literal: num_literal
+
+   14 num_literal: FLOATVAL
+   15            | INTVAL
+
+   16 table_name: IDENTIFIER
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 6 7
+')' (41) 6 7
+',' (44) 10 12
+error (256)
+IDENTIFIER (258) 9 10 16
+STRING (259)
+INTVAL (260) 15
+FLOATVAL (261) 14
+FROM (262) 4
+DELETE (263) 4
+TRUNCATE (264) 5
+INSERT (265) 6
+INTO (266) 6
+VALUES (267) 6
+UPDATE (268)
+SET (269)
+CREATE (270)
+TABLE (271)
+SELECT (272)
+GROUP (273)
+BY (274)
+HAVING (275)
+VARCHAR (276)
+INTEGER (277)
+
+
+Nonterminals, with rules where they appear
+
+$accept (26)
+    on left: 0
+preparable_statement (27)
+    on left: 1 2 3, on right: 0
+delete_statement (28)
+    on left: 4, on right: 1
+truncate_statement (29)
+    on left: 5, on right: 2
+insert_statement (30)
+    on left: 6, on right: 3
+opt_column_list (31)
+    on left: 7 8, on right: 6
+ident_commalist (32)
+    on left: 9 10, on right: 7 10
+literal_list (33)
+    on left: 11 12, on right: 6 12
+literal (34)
+    on left: 13, on right: 11 12
+num_literal (35)
+    on left: 14 15, on right: 13
+table_name (36)
+    on left: 16, on right: 4 5 6
+
+
+State 0
+
+    0 $accept: . preparable_statement $end
+
+    DELETE    shift, and go to state 1
+    TRUNCATE  shift, and go to state 2
+    INSERT    shift, and go to state 3
+
+    preparable_statement  转到状态 4
+    delete_statement      转到状态 5
+    truncate_statement    转到状态 6
+    insert_statement      转到状态 7
+
+
+State 1
+
+    4 delete_statement: DELETE . FROM table_name
+
+    FROM  shift, and go to state 8
+
+
+State 2
+
+    5 truncate_statement: TRUNCATE . table_name
+
+    IDENTIFIER  shift, and go to state 9
+
+    table_name  转到状态 10
+
+
+State 3
+
+    6 insert_statement: INSERT . INTO table_name opt_column_list VALUES '(' literal_list ')'
+
+    INTO  shift, and go to state 11
+
+
+State 4
+
+    0 $accept: preparable_statement . $end
+
+    $end  shift, and go to state 12
+
+
+State 5
+
+    1 preparable_statement: delete_statement .
+
+    $default  reduce using rule 1 (preparable_statement)
+
+
+State 6
+
+    2 preparable_statement: truncate_statement .
+
+    $default  reduce using rule 2 (preparable_statement)
+
+
+State 7
+
+    3 preparable_statement: insert_statement .
+
+    $default  reduce using rule 3 (preparable_statement)
+
+
+State 8
+
+    4 delete_statement: DELETE FROM . table_name
+
+    IDENTIFIER  shift, and go to state 9
+
+    table_name  转到状态 13
+
+
+State 9
+
+   16 table_name: IDENTIFIER .
+
+    $default  reduce using rule 16 (table_name)
+
+
+State 10
+
+    5 truncate_statement: TRUNCATE table_name .
+
+    $default  reduce using rule 5 (truncate_statement)
+
+
+State 11
+
+    6 insert_statement: INSERT INTO . table_name opt_column_list VALUES '(' literal_list ')'
+
+    IDENTIFIER  shift, and go to state 9
+
+    table_name  转到状态 14
+
+
+State 12
+
+    0 $accept: preparable_statement $end .
+
+    $default  接受
+
+
+State 13
+
+    4 delete_statement: DELETE FROM table_name .
+
+    $default  reduce using rule 4 (delete_statement)
+
+
+State 14
+
+    6 insert_statement: INSERT INTO table_name . opt_column_list VALUES '(' literal_list ')'
+
+    '('  shift, and go to state 15
+
+    $default  reduce using rule 8 (opt_column_list)
+
+    opt_column_list  转到状态 16
+
+
+State 15
+
+    7 opt_column_list: '(' . ident_commalist ')'
+
+    IDENTIFIER  shift, and go to state 17
+
+    ident_commalist  转到状态 18
+
+
+State 16
+
+    6 insert_statement: INSERT INTO table_name opt_column_list . VALUES '(' literal_list ')'
+
+    VALUES  shift, and go to state 19
+
+
+State 17
+
+    9 ident_commalist: IDENTIFIER .
+
+    $default  reduce using rule 9 (ident_commalist)
+
+
+State 18
+
+    7 opt_column_list: '(' ident_commalist . ')'
+   10 ident_commalist: ident_commalist . ',' IDENTIFIER
+
+    ')'  shift, and go to state 20
+    ','  shift, and go to state 21
+
+
+State 19
+
+    6 insert_statement: INSERT INTO table_name opt_column_list VALUES . '(' literal_list ')'
+
+    '('  shift, and go to state 22
+
+
+State 20
+
+    7 opt_column_list: '(' ident_commalist ')' .
+
+    $default  reduce using rule 7 (opt_column_list)
+
+
+State 21
+
+   10 ident_commalist: ident_commalist ',' . IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 23
+
+
+State 22
+
+    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' . literal_list ')'
+
+    INTVAL    shift, and go to state 24
+    FLOATVAL  shift, and go to state 25
+
+    literal_list  转到状态 26
+    literal       转到状态 27
+    num_literal   转到状态 28
+
+
+State 23
+
+   10 ident_commalist: ident_commalist ',' IDENTIFIER .
+
+    $default  reduce using rule 10 (ident_commalist)
+
+
+State 24
+
+   15 num_literal: INTVAL .
+
+    $default  reduce using rule 15 (num_literal)
+
+
+State 25
+
+   14 num_literal: FLOATVAL .
+
+    $default  reduce using rule 14 (num_literal)
+
+
+State 26
+
+    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list . ')'
+   12 literal_list: literal_list . ',' literal
+
+    ')'  shift, and go to state 29
+    ','  shift, and go to state 30
+
+
+State 27
+
+   11 literal_list: literal .
+
+    $default  reduce using rule 11 (literal_list)
+
+
+State 28
+
+   13 literal: num_literal .
+
+    $default  reduce using rule 13 (literal)
+
+
+State 29
+
+    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')' .
+
+    $default  reduce using rule 6 (insert_statement)
+
+
+State 30
+
+   12 literal_list: literal_list ',' . literal
+
+    INTVAL    shift, and go to state 24
+    FLOATVAL  shift, and go to state 25
+
+    literal      转到状态 31
+    num_literal  转到状态 28
+
+
+State 31
+
+   12 literal_list: literal_list ',' literal .
+
+    $default  reduce using rule 12 (literal_list)

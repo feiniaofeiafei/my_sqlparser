@@ -46,10 +46,25 @@ extern int yydebug;
   enum yytokentype
   {
     IDENTIFIER = 258,
-    SELECT = 259,
-    FROM = 260,
-    DELETE = 261,
-    TRUNCATE = 262
+    STRING = 259,
+    INTVAL = 260,
+    FLOATVAL = 261,
+    FROM = 262,
+    DELETE = 263,
+    TRUNCATE = 264,
+    INSERT = 265,
+    INTO = 266,
+    VALUES = 267,
+    UPDATE = 268,
+    SET = 269,
+    CREATE = 270,
+    TABLE = 271,
+    SELECT = 272,
+    GROUP = 273,
+    BY = 274,
+    HAVING = 275,
+    VARCHAR = 276,
+    INTEGER = 277
   };
 #endif
 
