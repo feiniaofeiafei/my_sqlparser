@@ -10,27 +10,31 @@ extern "C"
 %}
 %%
 [ \t\n]+	/* skip whitespace */;
-DELETE  {return DELETE;}
-FROM 	{return FROM;}
-TRUNCATE	{return TRUNCATE;}
+DELETE  {return SQL_DELETE;}
+FROM 	{return SQL_FROM;}
+TRUNCATE	{return SQL_TRUNCATE;}
 
-INSERT {return INSERT;}
-INTO 	{return INTO;}
-VALUES	{return VALUES;}
+INSERT {return SQL_INSERT;}
+INTO 	{return SQL_INTO;}
+VALUES	{return SQL_VALUES;}
 
-UPDATE {return UPDATE;}
-SET	{return SET;}
+UPDATE {return SQL_UPDATE;}
+SET	{return SQL_SET;}
 
-CREATE {return CREATE;}
-TABLE {return TABLE;}
+CREATE {return SQL_CREATE;}
+TABLE {return SQL_TABLE;}
+IF {return SQL_IF;}
+NOT {return SQL_NOT;}
+EXISTS {return SQL_EXISTS;}
+NULL {return SQL_NULL;}
 
-SELECT {return SELECT;}
-GROUP {return GROUP;}
-BY {return BY;}
-HAVING {return HAVING;}
+SELECT {return SQL_SELECT;}
+GROUP {return SQL_GROUP;}
+BY {return SQL_BY;}
+HAVING {return SQL_HAVING;}
 
-VARCHAR {return VARCHAR;}
-INTEGER {return INTEGER;}
+VARCHAR {return SQL_VARCHAR;}
+INTEGER {return SQL_INTEGER;}
 
 
 
