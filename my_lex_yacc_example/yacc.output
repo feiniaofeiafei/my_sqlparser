@@ -1,16 +1,129 @@
 Terminals unused in grammar
 
    STRING
-   UPDATE
-   SET
-   CREATE
-   TABLE
-   SELECT
-   GROUP
-   BY
+   DEALLOCATE
+   PARAMETERS
+   INTERSECT
+   TEMPORARY
+   TIMESTAMP
+   DISTINCT
+   NVARCHAR
+   RESTRICT
+   ANALYZE
+   BETWEEN
+   CASCADE
+   COLUMNS
+   CONTROL
+   DEFAULT
+   EXECUTE
+   EXPLAIN
+   NATURAL
+   PREPARE
+   PRIMARY
+   SCHEMAS
+   SPATIAL
+   VIRTUAL
+   DESCRIBE
+   BEFORE
+   COLUMN
+   DIRECT
+   DOUBLE
+   ESCAPE
+   EXCEPT
+   EXTRACT
+   CAST
+   FORMAT
+   GLOBAL
    HAVING
-   VARCHAR
-   INTEGER
+   IMPORT
+   ISNULL
+   OFFSET
+   RENAME
+   SCHEMA
+   SELECT
+   SORTED
+   TABLES
+   UNIQUE
+   UNLOAD
+   UPDATE
+   AFTER
+   ALTER
+   CROSS
+   DELTA
+   FLOAT
+   GROUP
+   INDEX
+   INNER
+   LIMIT
+   LOCAL
+   MERGE
+   MINUS
+   ORDER
+   OUTER
+   RIGHT
+   UNION
+   USING
+   WHERE
+   CALL
+   CASE
+   CHAR
+   COPY
+   DATE
+   DATETIME
+   DESC
+   DROP
+   ELSE
+   FILE
+   FULL
+   HASH
+   HINT
+   JOIN
+   LEFT
+   LIKE
+   LOAD
+   LONG
+   PLAN
+   SHOW
+   TEXT
+   THEN
+   TIME
+   VIEW
+   WHEN
+   WITH
+   ADD
+   ALL
+   AND
+   ASC
+   END
+   FOR
+   INT
+   KEY
+   OFF
+   SET
+   TOP
+   AS
+   BY
+   IN
+   IS
+   OF
+   ON
+   OR
+   TO
+   ARRAY
+   CONCAT
+   ILIKE
+   SECOND
+   MINUTE
+   HOUR
+   DAY
+   MONTH
+   YEAR
+   TRUE
+   FALSE
+   TRANSACTION
+   BEGIN
+   COMMIT
+   ROLLBACK
 
 
 语法
@@ -20,336 +133,664 @@ Terminals unused in grammar
     1 preparable_statement: delete_statement
     2                     | truncate_statement
     3                     | insert_statement
+    4                     | create_statement
 
-    4 delete_statement: DELETE FROM table_name
+    5 delete_statement: DELETE FROM table_name
 
-    5 truncate_statement: TRUNCATE table_name
+    6 truncate_statement: TRUNCATE table_name
 
-    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')'
+    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')'
 
-    7 opt_column_list: '(' ident_commalist ')'
-    8                | %empty
+    8 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')'
 
-    9 ident_commalist: IDENTIFIER
-   10                | ident_commalist ',' IDENTIFIER
+    9 opt_not_exists: IF NOT EXISTS
+   10               | %empty
 
-   11 literal_list: literal
-   12             | literal_list ',' literal
+   11 column_def_commalist: column_def
+   12                     | column_def_commalist ',' column_def
 
-   13 literal: num_literal
+   13 column_def: IDENTIFIER column_type opt_column_nullable
 
-   14 num_literal: FLOATVAL
-   15            | INTVAL
+   14 column_type: VARCHAR
+   15            | INTEGER
 
-   16 table_name: IDENTIFIER
+   16 opt_column_nullable: NULL
+   17                    | NOT NULL
+   18                    | %empty
+
+   19 opt_column_list: '(' ident_commalist ')'
+   20                | %empty
+
+   21 ident_commalist: IDENTIFIER
+   22                | ident_commalist ',' IDENTIFIER
+
+   23 literal_list: literal
+   24             | literal_list ',' literal
+
+   25 literal: num_literal
+
+   26 num_literal: FLOATVAL
+   27            | INTVAL
+
+   28 table_name: IDENTIFIER
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'(' (40) 6 7
-')' (41) 6 7
-',' (44) 10 12
+'(' (40) 7 8 19
+')' (41) 7 8 19
+',' (44) 12 22 24
 error (256)
-IDENTIFIER (258) 9 10 16
+IDENTIFIER (258) 13 21 22 28
 STRING (259)
-INTVAL (260) 15
-FLOATVAL (261) 14
-FROM (262) 4
-DELETE (263) 4
-TRUNCATE (264) 5
-INSERT (265) 6
-INTO (266) 6
-VALUES (267) 6
-UPDATE (268)
-SET (269)
-CREATE (270)
-TABLE (271)
-SELECT (272)
-GROUP (273)
-BY (274)
-HAVING (275)
-VARCHAR (276)
-INTEGER (277)
+FLOATVAL (260) 26
+INTVAL (261) 27
+DEALLOCATE (262)
+PARAMETERS (263)
+INTERSECT (264)
+TEMPORARY (265)
+TIMESTAMP (266)
+DISTINCT (267)
+NVARCHAR (268)
+RESTRICT (269)
+TRUNCATE (270) 6
+ANALYZE (271)
+BETWEEN (272)
+CASCADE (273)
+COLUMNS (274)
+CONTROL (275)
+DEFAULT (276)
+EXECUTE (277)
+EXPLAIN (278)
+INTEGER (279) 15
+NATURAL (280)
+PREPARE (281)
+PRIMARY (282)
+SCHEMAS (283)
+SPATIAL (284)
+VARCHAR (285) 14
+VIRTUAL (286)
+DESCRIBE (287)
+BEFORE (288)
+COLUMN (289)
+CREATE (290) 8
+DELETE (291) 5
+DIRECT (292)
+DOUBLE (293)
+ESCAPE (294)
+EXCEPT (295)
+EXISTS (296) 9
+EXTRACT (297)
+CAST (298)
+FORMAT (299)
+GLOBAL (300)
+HAVING (301)
+IMPORT (302)
+INSERT (303) 7
+ISNULL (304)
+OFFSET (305)
+RENAME (306)
+SCHEMA (307)
+SELECT (308)
+SORTED (309)
+TABLES (310)
+UNIQUE (311)
+UNLOAD (312)
+UPDATE (313)
+VALUES (314) 7
+AFTER (315)
+ALTER (316)
+CROSS (317)
+DELTA (318)
+FLOAT (319)
+GROUP (320)
+INDEX (321)
+INNER (322)
+LIMIT (323)
+LOCAL (324)
+MERGE (325)
+MINUS (326)
+ORDER (327)
+OUTER (328)
+RIGHT (329)
+TABLE (330) 8
+UNION (331)
+USING (332)
+WHERE (333)
+CALL (334)
+CASE (335)
+CHAR (336)
+COPY (337)
+DATE (338)
+DATETIME (339)
+DESC (340)
+DROP (341)
+ELSE (342)
+FILE (343)
+FROM (344) 5
+FULL (345)
+HASH (346)
+HINT (347)
+INTO (348) 7
+JOIN (349)
+LEFT (350)
+LIKE (351)
+LOAD (352)
+LONG (353)
+NULL (354) 16 17
+PLAN (355)
+SHOW (356)
+TEXT (357)
+THEN (358)
+TIME (359)
+VIEW (360)
+WHEN (361)
+WITH (362)
+ADD (363)
+ALL (364)
+AND (365)
+ASC (366)
+END (367)
+FOR (368)
+INT (369)
+KEY (370)
+NOT (371) 9 17
+OFF (372)
+SET (373)
+TOP (374)
+AS (375)
+BY (376)
+IF (377) 9
+IN (378)
+IS (379)
+OF (380)
+ON (381)
+OR (382)
+TO (383)
+ARRAY (384)
+CONCAT (385)
+ILIKE (386)
+SECOND (387)
+MINUTE (388)
+HOUR (389)
+DAY (390)
+MONTH (391)
+YEAR (392)
+TRUE (393)
+FALSE (394)
+TRANSACTION (395)
+BEGIN (396)
+COMMIT (397)
+ROLLBACK (398)
 
 
 Nonterminals, with rules where they appear
 
-$accept (26)
+$accept (147)
     on left: 0
-preparable_statement (27)
-    on left: 1 2 3, on right: 0
-delete_statement (28)
-    on left: 4, on right: 1
-truncate_statement (29)
-    on left: 5, on right: 2
-insert_statement (30)
-    on left: 6, on right: 3
-opt_column_list (31)
-    on left: 7 8, on right: 6
-ident_commalist (32)
-    on left: 9 10, on right: 7 10
-literal_list (33)
-    on left: 11 12, on right: 6 12
-literal (34)
+preparable_statement (148)
+    on left: 1 2 3 4, on right: 0
+delete_statement (149)
+    on left: 5, on right: 1
+truncate_statement (150)
+    on left: 6, on right: 2
+insert_statement (151)
+    on left: 7, on right: 3
+create_statement (152)
+    on left: 8, on right: 4
+opt_not_exists (153)
+    on left: 9 10, on right: 8
+column_def_commalist (154)
+    on left: 11 12, on right: 8 12
+column_def (155)
     on left: 13, on right: 11 12
-num_literal (35)
+column_type (156)
     on left: 14 15, on right: 13
-table_name (36)
-    on left: 16, on right: 4 5 6
+opt_column_nullable (157)
+    on left: 16 17 18, on right: 13
+opt_column_list (158)
+    on left: 19 20, on right: 7
+ident_commalist (159)
+    on left: 21 22, on right: 19 22
+literal_list (160)
+    on left: 23 24, on right: 7 24
+literal (161)
+    on left: 25, on right: 23 24
+num_literal (162)
+    on left: 26 27, on right: 25
+table_name (163)
+    on left: 28, on right: 5 6 7 8
 
 
 State 0
 
     0 $accept: . preparable_statement $end
 
-    DELETE    shift, and go to state 1
-    TRUNCATE  shift, and go to state 2
-    INSERT    shift, and go to state 3
+    TRUNCATE  shift, and go to state 1
+    CREATE    shift, and go to state 2
+    DELETE    shift, and go to state 3
+    INSERT    shift, and go to state 4
 
-    preparable_statement  转到状态 4
-    delete_statement      转到状态 5
-    truncate_statement    转到状态 6
-    insert_statement      转到状态 7
+    preparable_statement  转到状态 5
+    delete_statement      转到状态 6
+    truncate_statement    转到状态 7
+    insert_statement      转到状态 8
+    create_statement      转到状态 9
 
 
 State 1
 
-    4 delete_statement: DELETE . FROM table_name
+    6 truncate_statement: TRUNCATE . table_name
 
-    FROM  shift, and go to state 8
+    IDENTIFIER  shift, and go to state 10
+
+    table_name  转到状态 11
 
 
 State 2
 
-    5 truncate_statement: TRUNCATE . table_name
+    8 create_statement: CREATE . TABLE opt_not_exists table_name '(' column_def_commalist ')'
 
-    IDENTIFIER  shift, and go to state 9
-
-    table_name  转到状态 10
+    TABLE  shift, and go to state 12
 
 
 State 3
 
-    6 insert_statement: INSERT . INTO table_name opt_column_list VALUES '(' literal_list ')'
+    5 delete_statement: DELETE . FROM table_name
 
-    INTO  shift, and go to state 11
+    FROM  shift, and go to state 13
 
 
 State 4
 
-    0 $accept: preparable_statement . $end
+    7 insert_statement: INSERT . INTO table_name opt_column_list VALUES '(' literal_list ')'
 
-    $end  shift, and go to state 12
+    INTO  shift, and go to state 14
 
 
 State 5
+
+    0 $accept: preparable_statement . $end
+
+    $end  shift, and go to state 15
+
+
+State 6
 
     1 preparable_statement: delete_statement .
 
     $default  reduce using rule 1 (preparable_statement)
 
 
-State 6
+State 7
 
     2 preparable_statement: truncate_statement .
 
     $default  reduce using rule 2 (preparable_statement)
 
 
-State 7
+State 8
 
     3 preparable_statement: insert_statement .
 
     $default  reduce using rule 3 (preparable_statement)
 
 
-State 8
-
-    4 delete_statement: DELETE FROM . table_name
-
-    IDENTIFIER  shift, and go to state 9
-
-    table_name  转到状态 13
-
-
 State 9
 
-   16 table_name: IDENTIFIER .
+    4 preparable_statement: create_statement .
 
-    $default  reduce using rule 16 (table_name)
+    $default  reduce using rule 4 (preparable_statement)
 
 
 State 10
 
-    5 truncate_statement: TRUNCATE table_name .
+   28 table_name: IDENTIFIER .
 
-    $default  reduce using rule 5 (truncate_statement)
+    $default  reduce using rule 28 (table_name)
 
 
 State 11
 
-    6 insert_statement: INSERT INTO . table_name opt_column_list VALUES '(' literal_list ')'
+    6 truncate_statement: TRUNCATE table_name .
 
-    IDENTIFIER  shift, and go to state 9
-
-    table_name  转到状态 14
+    $default  reduce using rule 6 (truncate_statement)
 
 
 State 12
+
+    8 create_statement: CREATE TABLE . opt_not_exists table_name '(' column_def_commalist ')'
+
+    IF  shift, and go to state 16
+
+    $default  reduce using rule 10 (opt_not_exists)
+
+    opt_not_exists  转到状态 17
+
+
+State 13
+
+    5 delete_statement: DELETE FROM . table_name
+
+    IDENTIFIER  shift, and go to state 10
+
+    table_name  转到状态 18
+
+
+State 14
+
+    7 insert_statement: INSERT INTO . table_name opt_column_list VALUES '(' literal_list ')'
+
+    IDENTIFIER  shift, and go to state 10
+
+    table_name  转到状态 19
+
+
+State 15
 
     0 $accept: preparable_statement $end .
 
     $default  接受
 
 
-State 13
-
-    4 delete_statement: DELETE FROM table_name .
-
-    $default  reduce using rule 4 (delete_statement)
-
-
-State 14
-
-    6 insert_statement: INSERT INTO table_name . opt_column_list VALUES '(' literal_list ')'
-
-    '('  shift, and go to state 15
-
-    $default  reduce using rule 8 (opt_column_list)
-
-    opt_column_list  转到状态 16
-
-
-State 15
-
-    7 opt_column_list: '(' . ident_commalist ')'
-
-    IDENTIFIER  shift, and go to state 17
-
-    ident_commalist  转到状态 18
-
-
 State 16
 
-    6 insert_statement: INSERT INTO table_name opt_column_list . VALUES '(' literal_list ')'
+    9 opt_not_exists: IF . NOT EXISTS
 
-    VALUES  shift, and go to state 19
+    NOT  shift, and go to state 20
 
 
 State 17
 
-    9 ident_commalist: IDENTIFIER .
+    8 create_statement: CREATE TABLE opt_not_exists . table_name '(' column_def_commalist ')'
 
-    $default  reduce using rule 9 (ident_commalist)
+    IDENTIFIER  shift, and go to state 10
+
+    table_name  转到状态 21
 
 
 State 18
 
-    7 opt_column_list: '(' ident_commalist . ')'
-   10 ident_commalist: ident_commalist . ',' IDENTIFIER
+    5 delete_statement: DELETE FROM table_name .
 
-    ')'  shift, and go to state 20
-    ','  shift, and go to state 21
+    $default  reduce using rule 5 (delete_statement)
 
 
 State 19
 
-    6 insert_statement: INSERT INTO table_name opt_column_list VALUES . '(' literal_list ')'
+    7 insert_statement: INSERT INTO table_name . opt_column_list VALUES '(' literal_list ')'
 
     '('  shift, and go to state 22
+
+    $default  reduce using rule 20 (opt_column_list)
+
+    opt_column_list  转到状态 23
 
 
 State 20
 
-    7 opt_column_list: '(' ident_commalist ')' .
+    9 opt_not_exists: IF NOT . EXISTS
 
-    $default  reduce using rule 7 (opt_column_list)
+    EXISTS  shift, and go to state 24
 
 
 State 21
 
-   10 ident_commalist: ident_commalist ',' . IDENTIFIER
+    8 create_statement: CREATE TABLE opt_not_exists table_name . '(' column_def_commalist ')'
 
-    IDENTIFIER  shift, and go to state 23
+    '('  shift, and go to state 25
 
 
 State 22
 
-    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' . literal_list ')'
+   19 opt_column_list: '(' . ident_commalist ')'
 
-    INTVAL    shift, and go to state 24
-    FLOATVAL  shift, and go to state 25
+    IDENTIFIER  shift, and go to state 26
 
-    literal_list  转到状态 26
-    literal       转到状态 27
-    num_literal   转到状态 28
+    ident_commalist  转到状态 27
 
 
 State 23
 
-   10 ident_commalist: ident_commalist ',' IDENTIFIER .
+    7 insert_statement: INSERT INTO table_name opt_column_list . VALUES '(' literal_list ')'
 
-    $default  reduce using rule 10 (ident_commalist)
+    VALUES  shift, and go to state 28
 
 
 State 24
 
-   15 num_literal: INTVAL .
+    9 opt_not_exists: IF NOT EXISTS .
 
-    $default  reduce using rule 15 (num_literal)
+    $default  reduce using rule 9 (opt_not_exists)
 
 
 State 25
 
-   14 num_literal: FLOATVAL .
+    8 create_statement: CREATE TABLE opt_not_exists table_name '(' . column_def_commalist ')'
 
-    $default  reduce using rule 14 (num_literal)
+    IDENTIFIER  shift, and go to state 29
+
+    column_def_commalist  转到状态 30
+    column_def            转到状态 31
 
 
 State 26
 
-    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list . ')'
-   12 literal_list: literal_list . ',' literal
+   21 ident_commalist: IDENTIFIER .
 
-    ')'  shift, and go to state 29
-    ','  shift, and go to state 30
+    $default  reduce using rule 21 (ident_commalist)
 
 
 State 27
 
-   11 literal_list: literal .
+   19 opt_column_list: '(' ident_commalist . ')'
+   22 ident_commalist: ident_commalist . ',' IDENTIFIER
 
-    $default  reduce using rule 11 (literal_list)
+    ')'  shift, and go to state 32
+    ','  shift, and go to state 33
 
 
 State 28
 
-   13 literal: num_literal .
+    7 insert_statement: INSERT INTO table_name opt_column_list VALUES . '(' literal_list ')'
 
-    $default  reduce using rule 13 (literal)
+    '('  shift, and go to state 34
 
 
 State 29
 
-    6 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')' .
+   13 column_def: IDENTIFIER . column_type opt_column_nullable
 
-    $default  reduce using rule 6 (insert_statement)
+    INTEGER  shift, and go to state 35
+    VARCHAR  shift, and go to state 36
+
+    column_type  转到状态 37
 
 
 State 30
 
-   12 literal_list: literal_list ',' . literal
+    8 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist . ')'
+   12 column_def_commalist: column_def_commalist . ',' column_def
 
-    INTVAL    shift, and go to state 24
-    FLOATVAL  shift, and go to state 25
-
-    literal      转到状态 31
-    num_literal  转到状态 28
+    ')'  shift, and go to state 38
+    ','  shift, and go to state 39
 
 
 State 31
 
-   12 literal_list: literal_list ',' literal .
+   11 column_def_commalist: column_def .
 
-    $default  reduce using rule 12 (literal_list)
+    $default  reduce using rule 11 (column_def_commalist)
+
+
+State 32
+
+   19 opt_column_list: '(' ident_commalist ')' .
+
+    $default  reduce using rule 19 (opt_column_list)
+
+
+State 33
+
+   22 ident_commalist: ident_commalist ',' . IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 40
+
+
+State 34
+
+    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' . literal_list ')'
+
+    FLOATVAL  shift, and go to state 41
+    INTVAL    shift, and go to state 42
+
+    literal_list  转到状态 43
+    literal       转到状态 44
+    num_literal   转到状态 45
+
+
+State 35
+
+   15 column_type: INTEGER .
+
+    $default  reduce using rule 15 (column_type)
+
+
+State 36
+
+   14 column_type: VARCHAR .
+
+    $default  reduce using rule 14 (column_type)
+
+
+State 37
+
+   13 column_def: IDENTIFIER column_type . opt_column_nullable
+
+    NULL  shift, and go to state 46
+    NOT   shift, and go to state 47
+
+    $default  reduce using rule 18 (opt_column_nullable)
+
+    opt_column_nullable  转到状态 48
+
+
+State 38
+
+    8 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')' .
+
+    $default  reduce using rule 8 (create_statement)
+
+
+State 39
+
+   12 column_def_commalist: column_def_commalist ',' . column_def
+
+    IDENTIFIER  shift, and go to state 29
+
+    column_def  转到状态 49
+
+
+State 40
+
+   22 ident_commalist: ident_commalist ',' IDENTIFIER .
+
+    $default  reduce using rule 22 (ident_commalist)
+
+
+State 41
+
+   26 num_literal: FLOATVAL .
+
+    $default  reduce using rule 26 (num_literal)
+
+
+State 42
+
+   27 num_literal: INTVAL .
+
+    $default  reduce using rule 27 (num_literal)
+
+
+State 43
+
+    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list . ')'
+   24 literal_list: literal_list . ',' literal
+
+    ')'  shift, and go to state 50
+    ','  shift, and go to state 51
+
+
+State 44
+
+   23 literal_list: literal .
+
+    $default  reduce using rule 23 (literal_list)
+
+
+State 45
+
+   25 literal: num_literal .
+
+    $default  reduce using rule 25 (literal)
+
+
+State 46
+
+   16 opt_column_nullable: NULL .
+
+    $default  reduce using rule 16 (opt_column_nullable)
+
+
+State 47
+
+   17 opt_column_nullable: NOT . NULL
+
+    NULL  shift, and go to state 52
+
+
+State 48
+
+   13 column_def: IDENTIFIER column_type opt_column_nullable .
+
+    $default  reduce using rule 13 (column_def)
+
+
+State 49
+
+   12 column_def_commalist: column_def_commalist ',' column_def .
+
+    $default  reduce using rule 12 (column_def_commalist)
+
+
+State 50
+
+    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')' .
+
+    $default  reduce using rule 7 (insert_statement)
+
+
+State 51
+
+   24 literal_list: literal_list ',' . literal
+
+    FLOATVAL  shift, and go to state 41
+    INTVAL    shift, and go to state 42
+
+    literal      转到状态 53
+    num_literal  转到状态 45
+
+
+State 52
+
+   17 opt_column_nullable: NOT NULL .
+
+    $default  reduce using rule 17 (opt_column_nullable)
+
+
+State 53
+
+   24 literal_list: literal_list ',' literal .
+
+    $default  reduce using rule 24 (literal_list)

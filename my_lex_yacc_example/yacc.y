@@ -7,20 +7,35 @@ extern "C"
 	extern int yylex(void);
 }
 %}
-
-//terminals
-%token<sval> IDENTIFIER STRING
-%token<ival> INTVAL
-%token<fval> FLOATVAL
-
-%token SQL_FROM SQL_DELETE SQL_TRUNCATE
-%token SQL_INSERT SQL_INTO SQL_VALUES
-%token SQL_UPDATE SQL_SET
-%token SQL_CREATE SQL_TABLE SQL_IF SQL_EXISTS SQL_NOT SQL_NULL
-%token SQL_SELECT SQL_GROUP SQL_BY SQL_HAVING
-%token SQL_VARCHAR SQL_INTEGER
-
+%define api.token.prefix {SQL_}
 %left '(' ')'
+
+/*********************************
+ ** Token Definition
+  *********************************/
+  %token <sval> IDENTIFIER STRING
+  %token <fval> FLOATVAL
+  %token <ival> INTVAL
+
+  /* SQL Keywords */
+  %token DEALLOCATE PARAMETERS INTERSECT TEMPORARY TIMESTAMP
+  %token DISTINCT NVARCHAR RESTRICT TRUNCATE ANALYZE BETWEEN
+  %token CASCADE COLUMNS CONTROL DEFAULT EXECUTE EXPLAIN
+  %token INTEGER NATURAL PREPARE PRIMARY SCHEMAS
+  %token SPATIAL VARCHAR VIRTUAL DESCRIBE BEFORE COLUMN CREATE DELETE DIRECT
+  %token DOUBLE ESCAPE EXCEPT EXISTS EXTRACT CAST FORMAT GLOBAL HAVING IMPORT
+  %token INSERT ISNULL OFFSET RENAME SCHEMA SELECT SORTED
+  %token TABLES UNIQUE UNLOAD UPDATE VALUES AFTER ALTER CROSS
+  %token DELTA FLOAT GROUP INDEX INNER LIMIT LOCAL MERGE MINUS ORDER
+  %token OUTER RIGHT TABLE UNION USING WHERE CALL CASE CHAR COPY DATE DATETIME
+  %token DESC DROP ELSE FILE FROM FULL HASH HINT INTO JOIN
+  %token LEFT LIKE LOAD LONG NULL PLAN SHOW TEXT THEN TIME
+  %token VIEW WHEN WITH ADD ALL AND ASC END FOR INT KEY
+  %token NOT OFF SET TOP AS BY IF IN IS OF ON OR TO
+  %token ARRAY CONCAT ILIKE SECOND MINUTE HOUR DAY MONTH YEAR
+  %token TRUE FALSE
+  %token TRANSACTION BEGIN COMMIT ROLLBACK
+
 //non-terminals between the<> is a pointer variable,points to a structure
 %type<statement> preparable_statement
 %type<delete_stmt> delete_statement truncate_statement
@@ -57,27 +72,27 @@ preparable_statement:
 		*/
 	;
 delete_statement:
-		SQL_DELETE SQL_FROM table_name{
+		DELETE FROM table_name{
 			cout<<"a delete stmt"<<endl;	
 		}
 	;
 truncate_statement:
-		SQL_TRUNCATE table_name {
+		TRUNCATE table_name {
 			cout<<"a truncate stmt"<<endl;	
 		}
 	;
 insert_statement:
-		SQL_INSERT SQL_INTO table_name opt_column_list SQL_VALUES '(' literal_list ')'{
+		INSERT INTO table_name opt_column_list VALUES '(' literal_list ')'{
 			cout<<"a insert stmt"<<endl;	
 		}
 	;
 create_statement:
-		SQL_CREATE SQL_TABLE opt_not_exists table_name '(' column_def_commalist ')'{
+		CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')'{
 			cout<<"a create stmt"<<endl;		
 		}
 	;
 opt_not_exists:
-		SQL_IF SQL_NOT SQL_EXISTS
+		IF NOT EXISTS
 	|	/*empty*/
 	;
 column_def_commalist:
@@ -88,12 +103,12 @@ column_def:
 		IDENTIFIER column_type opt_column_nullable
 	;
 column_type:
-		SQL_VARCHAR
-	|	SQL_INTEGER
+		VARCHAR
+	|	INTEGER
 	;
 opt_column_nullable:
-		SQL_NULL
-	|	SQL_NOT SQL_NULL
+		NULL
+	|	NOT NULL
 	|	/*empty*/
 	;
 opt_column_list:
