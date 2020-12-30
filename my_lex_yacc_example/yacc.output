@@ -1,6 +1,79 @@
 Nonterminals useless in grammar
 
+   alias
+   array_expr
+   array_index
+   between_expr
+   binary_expr
+   bool_literal
+   case_expr
+   case_list
+   cast_expr
+   column_name
+   comp_expr
+   datetime_field
+   drop_statement
+   execute_statement
+   exists_expr
+   export_statement
+   expr
+   expr_alias
+   extract_expr
+   file_path
+   file_type
+   from_clause
+   function_expr
+   hint
+   import_statement
+   in_expr
+   int_literal
+   join_clause
+   join_condition
+   logic_expr
+   nonjoin_table_ref_atomic
+   null_literal
+   operand
+   opt_alias
+   opt_all
+   opt_distinct
+   opt_exists
+   opt_file_type
+   opt_from_clause
+   opt_group
+   opt_having
+   opt_join_type
+   opt_limit
+   opt_order_type
+   opt_table_alias
+   opt_top
+   opt_where
    order_desc
+   param_expr
+   prepare_statement
+   prepare_target_query
+   scalar_expr
+   select_clause
+   select_no_paren
+   select_statement
+   select_with_paren
+   select_within_set_operation
+   select_within_set_operation_no_parentheses
+   set_operator
+   set_type
+   show_statement
+   statement
+   statement_list
+   string_literal
+   table_alias
+   table_ref
+   table_ref_atomic
+   table_ref_name
+   table_ref_name_no_alias
+   transaction_statement
+   unary_expr
+   update_clause
+   update_statement
+   with_description
 
 
 Terminals unused in grammar
@@ -131,7 +204,7 @@ Terminals unused in grammar
    ROLLBACK
 
 
-语法
+Grammar
 
     0 $accept: preparable_statement $end
 
@@ -377,11 +450,11 @@ State 0
     DELETE    shift, and go to state 3
     INSERT    shift, and go to state 4
 
-    preparable_statement  转到状态 5
-    delete_statement      转到状态 6
-    truncate_statement    转到状态 7
-    insert_statement      转到状态 8
-    create_statement      转到状态 9
+    preparable_statement  go to state 5
+    delete_statement      go to state 6
+    truncate_statement    go to state 7
+    insert_statement      go to state 8
+    create_statement      go to state 9
 
 
 State 1
@@ -390,7 +463,7 @@ State 1
 
     IDENTIFIER  shift, and go to state 10
 
-    table_name  转到状态 11
+    table_name  go to state 11
 
 
 State 2
@@ -471,7 +544,7 @@ State 12
 
     $default  reduce using rule 10 (opt_not_exists)
 
-    opt_not_exists  转到状态 17
+    opt_not_exists  go to state 17
 
 
 State 13
@@ -480,7 +553,7 @@ State 13
 
     IDENTIFIER  shift, and go to state 10
 
-    table_name  转到状态 18
+    table_name  go to state 18
 
 
 State 14
@@ -489,14 +562,14 @@ State 14
 
     IDENTIFIER  shift, and go to state 10
 
-    table_name  转到状态 19
+    table_name  go to state 19
 
 
 State 15
 
     0 $accept: preparable_statement $end .
 
-    $default  接受
+    $default  accept
 
 
 State 16
@@ -512,7 +585,7 @@ State 17
 
     IDENTIFIER  shift, and go to state 10
 
-    table_name  转到状态 21
+    table_name  go to state 21
 
 
 State 18
@@ -530,7 +603,7 @@ State 19
 
     $default  reduce using rule 20 (opt_column_list)
 
-    opt_column_list  转到状态 23
+    opt_column_list  go to state 23
 
 
 State 20
@@ -553,7 +626,7 @@ State 22
 
     IDENTIFIER  shift, and go to state 26
 
-    ident_commalist  转到状态 27
+    ident_commalist  go to state 27
 
 
 State 23
@@ -576,8 +649,8 @@ State 25
 
     IDENTIFIER  shift, and go to state 29
 
-    column_def_commalist  转到状态 30
-    column_def            转到状态 31
+    column_def_commalist  go to state 30
+    column_def            go to state 31
 
 
 State 26
@@ -610,7 +683,7 @@ State 29
     INTEGER  shift, and go to state 35
     VARCHAR  shift, and go to state 36
 
-    column_type  转到状态 37
+    column_type  go to state 37
 
 
 State 30
@@ -650,9 +723,9 @@ State 34
     FLOATVAL  shift, and go to state 41
     INTVAL    shift, and go to state 42
 
-    literal_list  转到状态 43
-    literal       转到状态 44
-    num_literal   转到状态 45
+    literal_list  go to state 43
+    literal       go to state 44
+    num_literal   go to state 45
 
 
 State 35
@@ -678,7 +751,7 @@ State 37
 
     $default  reduce using rule 18 (opt_column_nullable)
 
-    opt_column_nullable  转到状态 48
+    opt_column_nullable  go to state 48
 
 
 State 38
@@ -694,7 +767,7 @@ State 39
 
     IDENTIFIER  shift, and go to state 29
 
-    column_def  转到状态 49
+    column_def  go to state 49
 
 
 State 40
@@ -783,8 +856,8 @@ State 51
     FLOATVAL  shift, and go to state 41
     INTVAL    shift, and go to state 42
 
-    literal      转到状态 53
-    num_literal  转到状态 45
+    literal      go to state 53
+    num_literal  go to state 45
 
 
 State 52

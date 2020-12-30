@@ -18,9 +18,9 @@ extern "C"
   %token <ival> INTVAL
 
   /* SQL Keywords */
-  %token DEALLOCATE PARAMETERS INTERSECT TEMPORARY TIMESTAMP
-  %token DISTINCT NVARCHAR RESTRICT TRUNCATE ANALYZE BETWEEN
-  %token CASCADE COLUMNS CONTROL DEFAULT EXECUTE EXPLAIN
+%token DEALLOCATE PARAMETERS INTERSECT TEMPORARY TIMESTAMP
+%token DISTINCT NVARCHAR RESTRICT TRUNCATE ANALYZE BETWEEN
+%token CASCADE COLUMNS CONTROL DEFAULT EXECUTE EXPLAIN
   %token INTEGER NATURAL PREPARE PRIMARY SCHEMAS
   %token SPATIAL VARCHAR VIRTUAL DESCRIBE BEFORE COLUMN CREATE DELETE DIRECT
   %token DOUBLE ESCAPE EXCEPT EXISTS EXTRACT CAST FORMAT GLOBAL HAVING IMPORT
@@ -36,16 +36,62 @@ extern "C"
   %token TRUE FALSE
   %token TRANSACTION BEGIN COMMIT ROLLBACK
 
+/*
 //non-terminals between the<> is a pointer variable,points to a structure
+
 %type<statement> preparable_statement
 %type<delete_stmt> delete_statement truncate_statement
 %type<insert_stmt> insert_statement
-/*%type<update_stmt> update_statement
+%type<update_stmt> update_statement
 %type<create_stmt> create_statement
 %type<select_stmt> select_statement
-*/
-%type <order>		    order_desc
 
+%type <order>		    order_desc
+*/
+
+/*********************************
+ ** Non-Terminal types (http://www.gnu.org/software/bison/manual/html_node/Type-Decl.html)
+ *********************************/
+
+%type <stmt_vec>	    statement_list
+%type <statement> 	    statement preparable_statement
+%type <exec_stmt>	    execute_statement
+%type <transaction_stmt>    transaction_statement
+%type <prep_stmt>	    prepare_statement
+%type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+%type <import_stmt>     import_statement
+%type <export_stmt>     export_statement
+%type <create_stmt>     create_statement
+%type <insert_stmt>     insert_statement
+%type <delete_stmt>     delete_statement truncate_statement
+%type <update_stmt>     update_statement
+%type <drop_stmt>	    drop_statement
+%type <show_stmt>	    show_statement
+%type <table_name>      table_name
+%type <sval> 		    file_path prepare_target_query
+%type <bval> 		    opt_not_exists opt_exists opt_distinct opt_column_nullable opt_all
+%type <uval>		    opt_join_type
+%type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+%type <table>		    join_clause table_ref_name_no_alias
+%type <expr> 		    expr operand scalar_expr unary_expr binary_expr logic_expr exists_expr extract_expr cast_expr
+%type <expr>		    function_expr between_expr expr_alias param_expr
+%type <expr> 		    column_name literal int_literal num_literal string_literal bool_literal
+%type <expr> 		    comp_expr opt_where join_condition opt_having case_expr case_list in_expr hint
+%type <expr> 		    array_expr array_index null_literal
+%type <limit>		    opt_limit opt_top
+%type <order>		    order_desc
+%type <order_type>	    opt_order_type
+%type <datetime_field>	datetime_field
+%type <column_t>	    column_def
+%type <column_type_t>   column_type
+%type <update_t>	    update_clause
+%type <group_t>		    opt_group
+%type <alias_t>		    opt_table_alias table_alias opt_alias alias
+%type <with_description_t>  with_description
+%type <set_operator_t>  set_operator set_type
+
+// ImportType is used for compatibility reasons
+%type <import_type_t>	opt_file_type file_type
 
 
 

@@ -1,0 +1,9 @@
+g++ -std=c++11 -c lex.yy.c
+g++ -std=c++11 -c yacc.tab.c
+g++ lex.yy.o yacc.tab.o -o main			 -lfl -ly
+-----------begin parsing file.txt
+id: T1
+a create stmt
+a preparable stmt of create_statement
+--------the file is end
+---------end parsing
