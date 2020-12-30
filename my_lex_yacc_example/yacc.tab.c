@@ -90,10 +90,7 @@ extern "C"
 # define YYERROR_VERBOSE 0
 #endif
 
-/* In a future release of Bison, this section will be replaced
-   by #include "yacc.tab.h".  */
-#ifndef YY_YY_YACC_TAB_H_INCLUDED
-# define YY_YY_YACC_TAB_H_INCLUDED
+
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -258,11 +255,11 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_YACC_TAB_H_INCLUDED  */
+
 
 /* Copy the second part of user declarations.  */
 
-#line 266 "yacc.tab.c" /* yacc.c:358  */
+#line 263 "yacc.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -573,9 +570,9 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    52,    52,    55,    58,    61,    75,    80,    85,    90,
-      95,    96,    99,   100,   103,   106,   107,   110,   111,   112,
-     115,   116,   119,   120,   123,   126,   131,   136,   139,   145
+       0,    54,    54,    57,    60,    63,    77,    82,    87,    92,
+      97,    98,   101,   102,   105,   108,   109,   112,   113,   114,
+     117,   118,   121,   122,   125,   128,   133,   138,   141,   147
 };
 #endif
 
@@ -1427,137 +1424,137 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 52 "yacc.y" /* yacc.c:1646  */
+#line 54 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a preparable stmt of delete_statement"<<endl;
 		}
-#line 1435 "yacc.tab.c" /* yacc.c:1646  */
+#line 1432 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 55 "yacc.y" /* yacc.c:1646  */
+#line 57 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a preparable stmt of truncate_statement"<<endl;
 		}
-#line 1443 "yacc.tab.c" /* yacc.c:1646  */
+#line 1440 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 58 "yacc.y" /* yacc.c:1646  */
+#line 60 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a preparable stmt of insert_statement"<<endl;
 		}
-#line 1451 "yacc.tab.c" /* yacc.c:1646  */
+#line 1448 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 61 "yacc.y" /* yacc.c:1646  */
+#line 63 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a preparable stmt of create_statement"<<endl;
 		}
-#line 1459 "yacc.tab.c" /* yacc.c:1646  */
+#line 1456 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 75 "yacc.y" /* yacc.c:1646  */
+#line 77 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a delete stmt"<<endl;	
 		}
-#line 1467 "yacc.tab.c" /* yacc.c:1646  */
+#line 1464 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 80 "yacc.y" /* yacc.c:1646  */
+#line 82 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a truncate stmt"<<endl;	
 		}
-#line 1475 "yacc.tab.c" /* yacc.c:1646  */
+#line 1472 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 85 "yacc.y" /* yacc.c:1646  */
+#line 87 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a insert stmt"<<endl;	
 		}
-#line 1483 "yacc.tab.c" /* yacc.c:1646  */
+#line 1480 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 90 "yacc.y" /* yacc.c:1646  */
+#line 92 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"a create stmt"<<endl;		
 		}
-#line 1491 "yacc.tab.c" /* yacc.c:1646  */
+#line 1488 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 115 "yacc.y" /* yacc.c:1646  */
+#line 117 "yacc.y" /* yacc.c:1646  */
     {cout<<"ident_commalist"<<endl;}
-#line 1497 "yacc.tab.c" /* yacc.c:1646  */
+#line 1494 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 116 "yacc.y" /* yacc.c:1646  */
+#line 118 "yacc.y" /* yacc.c:1646  */
     {cout<<"empty"<<endl;}
-#line 1503 "yacc.tab.c" /* yacc.c:1646  */
+#line 1500 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 119 "yacc.y" /* yacc.c:1646  */
+#line 121 "yacc.y" /* yacc.c:1646  */
     {cout<<"identifier in ident_commalist"<<endl;}
-#line 1509 "yacc.tab.c" /* yacc.c:1646  */
+#line 1506 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 123 "yacc.y" /* yacc.c:1646  */
+#line 125 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"literal in literal list"<<endl;
 		}
-#line 1517 "yacc.tab.c" /* yacc.c:1646  */
+#line 1514 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 126 "yacc.y" /* yacc.c:1646  */
+#line 128 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"literal_list and literal in literal list"<<endl;
 		}
-#line 1525 "yacc.tab.c" /* yacc.c:1646  */
+#line 1522 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 131 "yacc.y" /* yacc.c:1646  */
+#line 133 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"literal"<<endl;
 		}
-#line 1533 "yacc.tab.c" /* yacc.c:1646  */
+#line 1530 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 136 "yacc.y" /* yacc.c:1646  */
+#line 138 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"FLOATVAL: "<<(yyvsp[0].fval)<<endl;
 		}
-#line 1541 "yacc.tab.c" /* yacc.c:1646  */
+#line 1538 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 139 "yacc.y" /* yacc.c:1646  */
+#line 141 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"INTVAL: "<<(yyvsp[0].ival)<<endl;
 		}
-#line 1549 "yacc.tab.c" /* yacc.c:1646  */
+#line 1546 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 145 "yacc.y" /* yacc.c:1646  */
+#line 147 "yacc.y" /* yacc.c:1646  */
     {
 			cout<<"id: "<<(yyvsp[0].sval)<<endl;
 		}
-#line 1557 "yacc.tab.c" /* yacc.c:1646  */
+#line 1554 "yacc.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1561 "yacc.tab.c" /* yacc.c:1646  */
+#line 1558 "yacc.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1785,7 +1782,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 149 "yacc.y" /* yacc.c:1906  */
+#line 151 "yacc.y" /* yacc.c:1906  */
 
 
 int main()

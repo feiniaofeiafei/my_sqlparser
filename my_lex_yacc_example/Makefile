@@ -8,10 +8,10 @@ $(OBJECT): lex.yy.o  yacc.tab.o
 	@./$(OBJECT)	
 
 lex.yy.o: lex.yy.c  yacc.tab.h  main.h
-	$(CC) -c lex.yy.c
+	$(CC) -std=c++11 -c lex.yy.c
 
 yacc.tab.o: yacc.tab.c  main.h
-	$(CC) -c yacc.tab.c
+	$(CC) -std=c++11 -c yacc.tab.c
 
 yacc.tab.c  yacc.tab.h: yacc.y
 	$(YACC) -d -v yacc.y --verbose

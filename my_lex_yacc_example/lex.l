@@ -9,6 +9,8 @@ extern "C"
 	int yylex(void);
 }
 %}
+
+%option case-insensitive
 %%
 [ \t\n]+	/* skip whitespace */;
 
@@ -149,37 +151,6 @@ BEGIN       TOKEN(BEGIN)
 ROLLBACK    TOKEN(ROLLBACK)
 COMMIT      TOKEN(COMMIT)
 
- /*
-DATETIME TOKEN(DATETIME)
-
-DELETE  TOKEN(DELETE)
-FROM 	{return SQL_FROM;}
-TRUNCATE	{return SQL_TRUNCATE;}
-
-INSERT {return SQL_INSERT;}
-INTO 	{return SQL_INTO;}
-VALUES	{return SQL_VALUES;}
-
-UPDATE {return SQL_UPDATE;}
-SET	{return SQL_SET;}
-
-CREATE {return SQL_CREATE;}
-TABLE {return SQL_TABLE;}
-IF {return SQL_IF;}
-NOT {return SQL_NOT;}
-EXISTS {return SQL_EXISTS;}
-NULL {return SQL_NULL;}
-SELECT {return SQL_SELECT;}
-GROUP {return SQL_GROUP;}
-BY {return SQL_BY;}
-HAVING {return SQL_HAVING;}
-
-VARCHAR {return SQL_VARCHAR;}
-INTEGER {return SQL_INTEGER;}
-*/
-
-
-
 [A-Za-z][A-Za-z0-9]* {
 	yylval.sval = yytext;
 	return SQL_IDENTIFIER;
@@ -194,7 +165,8 @@ INTEGER {return SQL_INTEGER;}
 	return SQL_FLOATVAL;
 }
 
-[(),.] {return yytext[0];}
+[-+*/(){},.;<>=^%:?[\]|]	{ return yytext[0]; }
+
 %%
 int yywrap(void)
 {

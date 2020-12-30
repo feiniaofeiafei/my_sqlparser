@@ -44,6 +44,8 @@ extern "C"
 %type<create_stmt> create_statement
 %type<select_stmt> select_statement
 */
+%type <order>		    order_desc
+
 
 
 
