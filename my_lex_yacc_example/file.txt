@@ -1,1 +1,1 @@
-update t1 set a=1 where b=2
+update t1 set a=1 where b=2;

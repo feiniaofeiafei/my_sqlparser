@@ -37,17 +37,7 @@ extern "C"
 
 /*
 //non-terminals between the<> is a pointer variable,points to a structure
-
-%type<statement> preparable_statement
-%type<delete_stmt> delete_statement truncate_statement
-%type<insert_stmt> insert_statement
-%type<update_stmt> update_statement
-%type<create_stmt> create_statement
-%type<select_stmt> select_statement
-
-%type <order>		    order_desc
 */
-
 /*********************************
  ** Non-Terminal types (http://www.gnu.org/software/bison/manual/html_node/Type-Decl.html)
  *********************************/
@@ -114,6 +104,20 @@ extern "C"
 %left   JOIN
 
 %%
+input:
+		statement_list opt_semicolon
+	;
+statement_list:
+		statement
+	|	statement_list ';' statement
+	;
+statement:
+		preparable_statement 
+	;
+opt_semicolon:
+		';'
+	|	/*empty*/
+	;
 preparable_statement:
 		delete_statement{
 			cout<<"a preparable stmt of delete_statement"<<endl;

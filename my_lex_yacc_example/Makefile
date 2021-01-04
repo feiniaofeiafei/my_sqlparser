@@ -14,7 +14,7 @@ yacc.tab.o: yacc.tab.c  main.h
 	$(CC) -std=c++11 -c yacc.tab.c
 
 yacc.tab.c  yacc.tab.h: yacc.y
-	$(YACC) -d -v yacc.y --verbose
+	$(YACC) -d -v yacc.y --verbose -t --locations
 
 lex.yy.c: lex.l
 	$(LEX) lex.l
