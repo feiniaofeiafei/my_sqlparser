@@ -8,7 +8,6 @@ extern "C"
 }
 %}
 %define api.token.prefix {SQL_}
-%left '(' ')'
 
 /*********************************
  ** Token Definition
@@ -93,7 +92,26 @@ extern "C"
 // ImportType is used for compatibility reasons
 %type <import_type_t>	opt_file_type file_type
 
+%left		OR
+%left		AND
+%right		NOT
+%nonassoc	'=' EQUALS NOTEQUALS LIKE ILIKE
+%nonassoc	'<' '>' LESS GREATER LESSEQ GREATEREQ
 
+%nonassoc	NOTNULL
+%nonassoc	ISNULL
+%nonassoc	IS				/* sets precedence for IS NULL, etc */
+%left		'+' '-'
+%left		'*' '/' '%'
+%left		'^'
+%left		CONCAT
+
+/* Unary Operators */
+%right  UMINUS
+%left		'[' ']'
+%left		'(' ')'
+%left		'.'
+%left   JOIN
 
 %%
 preparable_statement:
@@ -109,11 +127,11 @@ preparable_statement:
 	|	create_statement{
 			cout<<"a preparable stmt of create_statement"<<endl;
 		}
-	/*
 	|	
 		update_statement{
 			cout<<"a preparable stmt of update_statement"<<endl;
 		}
+	/*
 	|	select_statement{
 			cout<<"a preparable stmt of select_statement"<<endl;
 		}
@@ -139,10 +157,176 @@ create_statement:
 			cout<<"a create stmt"<<endl;		
 		}
 	;
+update_statement:
+		UPDATE table_ref_name_no_alias SET update_clause_commalist opt_where
+		
+	;
+update_clause_commalist:
+		update_clause
+	|	update_clause_commalist ',' update_clause
+	;
+update_clause:
+		IDENTIFIER '=' expr
+	;
+opt_where:
+		WHERE expr
+	|	/*empty*/
+	;
+table_ref_name_no_alias:
+		table_name
+	;
+table_name:
+		IDENTIFIER
+	|	IDENTIFIER '.' IDENTIFIER
+	;
+expr_list:
+		expr_alias
+	|	expr_list ',' expr_alias
+	;
+opt_literal_list:
+		literal_list
+	|	/*empty*/
+	;
+expr_alias:
+		expr opt_alias
+	;
+opt_alias:
+		alias
+	|	/*empty*/
+	;
+alias:
+		AS IDENTIFIER
+	|	IDENTIFIER
+	;
+
+expr:
+		operand
+	|	between_expr
+	|	logic_expr
+	| 	exists_expr
+	|	in_expr
+	;
+operand:
+		'(' expr ')'
+	|	array_index
+	|	scalar_expr
+	|	unary_expr
+	|	binary_expr
+	|	case_expr
+	|	function_expr
+	|	extract_expr
+	|	cast_expr
+	|	array_expr
+ /*	|	'(' select_no_paren ')' */
+	;
+scalar_expr:
+		column_name
+	|	literal
+	;
+unary_expr:
+		'-' operand
+	|	NOT operand
+	|	operand ISNULL
+	|	operand IS NULL
+	|	operand IS NOT NULL
+	;
+binary_expr:
+		comp_expr
+	|	operand '-' operand
+	|	operand '+' operand
+	|	operand '/' operand
+	|	operand '*' operand
+	|	operand '%' operand
+	|	operand '^' operand
+	|	operand LIKE operand
+	|	operand NOT LIKE operand
+	|	operand ILIKE operand
+	|	operand CONCAT operand
+	;
+logic_expr:
+		expr AND expr
+	|	expr OR expr
+	;
+in_expr:
+		operand IN '(' expr_list ')'
+	|	operand NOT IN '(' expr_list ')'
+/*	|	operand IN '(' select_no_paren ')'
+	|	operand NOT IN '(' select_no_paren ')' */
+	;
+case_list:
+		WHEN expr THEN expr
+	| 	case_list WHEN expr THEN expr
+	;
+case_expr:
+		CASE expr case_list END
+	|	CASE expr case_list ELSE expr END
+	|	CASE case_list END
+	|	CASE case_list ELSE expr END
+	;
+exists_expr:
+		EXISTS
+	|	NOT EXISTS
+	;
+
+comp_expr:
+		operand '=' operand
+	|	operand EQUALS operand
+	|	operand NOTEQUALS operand
+	|	operand '<' operand
+	|	operand '>' operand
+	|	operand LESSEQ operand
+	|	operand GREATEREQ operand
+	;
+
+function_expr:
+		IDENTIFIER '(' ')'
+	|	IDENTIFIER '('opt_distinct expr_list ')'
+	;
+opt_distinct:
+		DISTINCT
+	|	/*empty*/
+	;
+extract_expr:
+		EXTRACT '(' datetime_field FROM expr ')'
+	;
+cast_expr:
+		CAST '(' expr AS column_type ')'
+	;
+datetime_field:
+		SECOND
+	|	MINUTE
+	|	HOUR
+	|	DAY
+	|	MONTH
+	|	YEAR
+	;
+array_expr:
+		ARRAY '[' expr_list ']'
+	;
+array_index:
+		operand '[' int_literal ']'
+	;
+between_expr:
+		operand BETWEEN operand AND operand
+	;
+column_name:
+		IDENTIFIER
+	|	IDENTIFIER '.' IDENTIFIER
+	|	'*'
+	|	IDENTIFIER '.' '*'
+	;
+literal:
+		string_literal
+	|	bool_literal
+	|	num_literal
+	|	null_literal
+	|	param_expr
+	;
 opt_not_exists:
 		IF NOT EXISTS
 	|	/*empty*/
 	;
+
 column_def_commalist:
 		column_def
 	|	column_def_commalist ',' column_def
@@ -175,18 +359,29 @@ literal_list:
 			cout<<"literal_list and literal in literal list"<<endl;
 		}
 	;
-literal:
-		num_literal{
-			cout<<"literal"<<endl;
-		}
+string_literal:
+		STRING
+	;
+bool_literal:
+		TRUE
+	|	FALSE
 	;
 num_literal:
 		FLOATVAL{
 			cout<<"FLOATVAL: "<<$1<<endl;
 		}
-	|	INTVAL{
+	|	int_literal{
 			cout<<"INTVAL: "<<$1<<endl;
 		}
+	;
+int_literal:
+		INTVAL
+	;
+null_literal:
+		NULL
+	;
+param_expr:
+		'?'
 	;
 
 table_name:

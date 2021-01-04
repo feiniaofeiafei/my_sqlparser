@@ -1,1 +1,1 @@
-create TABLE T1 (a INTEGER)
+update t1 set a=1 where b=2

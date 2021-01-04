@@ -1,41 +1,18 @@
 Nonterminals useless in grammar
 
-   alias
-   array_expr
-   array_index
-   between_expr
-   binary_expr
-   bool_literal
-   case_expr
-   case_list
-   cast_expr
-   column_name
-   comp_expr
-   datetime_field
+   opt_literal_list
    drop_statement
    execute_statement
-   exists_expr
    export_statement
-   expr
-   expr_alias
-   extract_expr
    file_path
    file_type
    from_clause
-   function_expr
    hint
    import_statement
-   in_expr
-   int_literal
    join_clause
    join_condition
-   logic_expr
    nonjoin_table_ref_atomic
-   null_literal
-   operand
-   opt_alias
    opt_all
-   opt_distinct
    opt_exists
    opt_file_type
    opt_from_clause
@@ -46,12 +23,9 @@ Nonterminals useless in grammar
    opt_order_type
    opt_table_alias
    opt_top
-   opt_where
    order_desc
-   param_expr
    prepare_statement
    prepare_target_query
-   scalar_expr
    select_clause
    select_no_paren
    select_statement
@@ -63,32 +37,24 @@ Nonterminals useless in grammar
    show_statement
    statement
    statement_list
-   string_literal
    table_alias
    table_ref
    table_ref_atomic
    table_ref_name
-   table_ref_name_no_alias
    transaction_statement
-   unary_expr
-   update_clause
-   update_statement
    with_description
 
 
 Terminals unused in grammar
 
-   STRING
    DEALLOCATE
    PARAMETERS
    INTERSECT
    TEMPORARY
    TIMESTAMP
-   DISTINCT
    NVARCHAR
    RESTRICT
    ANALYZE
-   BETWEEN
    CASCADE
    COLUMNS
    CONTROL
@@ -108,13 +74,10 @@ Terminals unused in grammar
    DOUBLE
    ESCAPE
    EXCEPT
-   EXTRACT
-   CAST
    FORMAT
    GLOBAL
    HAVING
    IMPORT
-   ISNULL
    OFFSET
    RENAME
    SCHEMA
@@ -123,7 +86,6 @@ Terminals unused in grammar
    TABLES
    UNIQUE
    UNLOAD
-   UPDATE
    AFTER
    ALTER
    CROSS
@@ -141,70 +103,64 @@ Terminals unused in grammar
    RIGHT
    UNION
    USING
-   WHERE
    CALL
-   CASE
    CHAR
    COPY
    DATE
    DATETIME
    DESC
    DROP
-   ELSE
    FILE
    FULL
    HASH
    HINT
    JOIN
    LEFT
-   LIKE
    LOAD
    LONG
    PLAN
    SHOW
    TEXT
-   THEN
    TIME
    VIEW
-   WHEN
    WITH
    ADD
    ALL
-   AND
    ASC
-   END
    FOR
    INT
    KEY
    OFF
-   SET
    TOP
-   AS
    BY
-   IN
-   IS
    OF
    ON
-   OR
    TO
-   ARRAY
-   CONCAT
-   ILIKE
-   SECOND
-   MINUTE
-   HOUR
-   DAY
-   MONTH
-   YEAR
-   TRUE
-   FALSE
    TRANSACTION
    BEGIN
    COMMIT
    ROLLBACK
+   LESS
+   GREATER
+   NOTNULL
+   UMINUS
 
 
-Grammar
+语法中的规则无效
+
+  127 opt_literal_list: literal_list
+  128                 | %empty
+
+
+由于冲突，解析器中的规则不起作用
+
+  126 table_name: IDENTIFIER
+
+
+状态 12conflicts: 4 reduce/reduce
+
+
+语法
 
     0 $accept: preparable_statement $end
 
@@ -212,101 +168,247 @@ Grammar
     2                     | truncate_statement
     3                     | insert_statement
     4                     | create_statement
+    5                     | update_statement
 
-    5 delete_statement: DELETE FROM table_name
+    6 delete_statement: DELETE FROM table_name
 
-    6 truncate_statement: TRUNCATE table_name
+    7 truncate_statement: TRUNCATE table_name
 
-    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')'
+    8 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')'
 
-    8 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')'
+    9 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')'
 
-    9 opt_not_exists: IF NOT EXISTS
-   10               | %empty
+   10 update_statement: UPDATE table_ref_name_no_alias SET update_clause_commalist opt_where
 
-   11 column_def_commalist: column_def
-   12                     | column_def_commalist ',' column_def
+   11 update_clause_commalist: update_clause
+   12                        | update_clause_commalist ',' update_clause
 
-   13 column_def: IDENTIFIER column_type opt_column_nullable
+   13 update_clause: IDENTIFIER '=' expr
 
-   14 column_type: VARCHAR
-   15            | INTEGER
+   14 opt_where: WHERE expr
+   15          | %empty
 
-   16 opt_column_nullable: NULL
-   17                    | NOT NULL
-   18                    | %empty
+   16 table_ref_name_no_alias: table_name
 
-   19 opt_column_list: '(' ident_commalist ')'
-   20                | %empty
+   17 table_name: IDENTIFIER
+   18           | IDENTIFIER '.' IDENTIFIER
 
-   21 ident_commalist: IDENTIFIER
-   22                | ident_commalist ',' IDENTIFIER
+   19 expr_list: expr_alias
+   20          | expr_list ',' expr_alias
 
-   23 literal_list: literal
-   24             | literal_list ',' literal
+   21 expr_alias: expr opt_alias
 
-   25 literal: num_literal
+   22 opt_alias: alias
+   23          | %empty
 
-   26 num_literal: FLOATVAL
-   27            | INTVAL
+   24 alias: AS IDENTIFIER
+   25      | IDENTIFIER
 
-   28 table_name: IDENTIFIER
+   26 expr: operand
+   27     | between_expr
+   28     | logic_expr
+   29     | exists_expr
+   30     | in_expr
+
+   31 operand: '(' expr ')'
+   32        | array_index
+   33        | scalar_expr
+   34        | unary_expr
+   35        | binary_expr
+   36        | case_expr
+   37        | function_expr
+   38        | extract_expr
+   39        | cast_expr
+   40        | array_expr
+
+   41 scalar_expr: column_name
+   42            | literal
+
+   43 unary_expr: '-' operand
+   44           | NOT operand
+   45           | operand ISNULL
+   46           | operand IS NULL
+   47           | operand IS NOT NULL
+
+   48 binary_expr: comp_expr
+   49            | operand '-' operand
+   50            | operand '+' operand
+   51            | operand '/' operand
+   52            | operand '*' operand
+   53            | operand '%' operand
+   54            | operand '^' operand
+   55            | operand LIKE operand
+   56            | operand NOT LIKE operand
+   57            | operand ILIKE operand
+   58            | operand CONCAT operand
+
+   59 logic_expr: expr AND expr
+   60           | expr OR expr
+
+   61 in_expr: operand IN '(' expr_list ')'
+   62        | operand NOT IN '(' expr_list ')'
+
+   63 case_list: WHEN expr THEN expr
+   64          | case_list WHEN expr THEN expr
+
+   65 case_expr: CASE expr case_list END
+   66          | CASE expr case_list ELSE expr END
+   67          | CASE case_list END
+   68          | CASE case_list ELSE expr END
+
+   69 exists_expr: EXISTS
+   70            | NOT EXISTS
+
+   71 comp_expr: operand '=' operand
+   72          | operand EQUALS operand
+   73          | operand NOTEQUALS operand
+   74          | operand '<' operand
+   75          | operand '>' operand
+   76          | operand LESSEQ operand
+   77          | operand GREATEREQ operand
+
+   78 function_expr: IDENTIFIER '(' ')'
+   79              | IDENTIFIER '(' opt_distinct expr_list ')'
+
+   80 opt_distinct: DISTINCT
+   81             | %empty
+
+   82 extract_expr: EXTRACT '(' datetime_field FROM expr ')'
+
+   83 cast_expr: CAST '(' expr AS column_type ')'
+
+   84 datetime_field: SECOND
+   85               | MINUTE
+   86               | HOUR
+   87               | DAY
+   88               | MONTH
+   89               | YEAR
+
+   90 array_expr: ARRAY '[' expr_list ']'
+
+   91 array_index: operand '[' int_literal ']'
+
+   92 between_expr: operand BETWEEN operand AND operand
+
+   93 column_name: IDENTIFIER
+   94            | IDENTIFIER '.' IDENTIFIER
+   95            | '*'
+   96            | IDENTIFIER '.' '*'
+
+   97 literal: string_literal
+   98        | bool_literal
+   99        | num_literal
+  100        | null_literal
+  101        | param_expr
+
+  102 opt_not_exists: IF NOT EXISTS
+  103               | %empty
+
+  104 column_def_commalist: column_def
+  105                     | column_def_commalist ',' column_def
+
+  106 column_def: IDENTIFIER column_type opt_column_nullable
+
+  107 column_type: VARCHAR
+  108            | INTEGER
+
+  109 opt_column_nullable: NULL
+  110                    | NOT NULL
+  111                    | %empty
+
+  112 opt_column_list: '(' ident_commalist ')'
+  113                | %empty
+
+  114 ident_commalist: IDENTIFIER
+  115                | ident_commalist ',' IDENTIFIER
+
+  116 literal_list: literal
+  117             | literal_list ',' literal
+
+  118 string_literal: STRING
+
+  119 bool_literal: TRUE
+  120             | FALSE
+
+  121 num_literal: FLOATVAL
+  122            | int_literal
+
+  123 int_literal: INTVAL
+
+  124 null_literal: NULL
+
+  125 param_expr: '?'
+
+  126 table_name: IDENTIFIER
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'(' (40) 7 8 19
-')' (41) 7 8 19
-',' (44) 12 22 24
+'%' (37) 53
+'(' (40) 8 9 31 61 62 78 79 82 83 112
+')' (41) 8 9 31 61 62 78 79 82 83 112
+'*' (42) 52 95 96
+'+' (43) 50
+',' (44) 12 20 105 115 117
+'-' (45) 43 49
+'.' (46) 18 94 96
+'/' (47) 51
+'<' (60) 74
+'=' (61) 13 71
+'>' (62) 75
+'?' (63) 125
+'[' (91) 90 91
+']' (93) 90 91
+'^' (94) 54
 error (256)
-IDENTIFIER (258) 13 21 22 28
-STRING (259)
-FLOATVAL (260) 26
-INTVAL (261) 27
+IDENTIFIER (258) 13 17 18 24 25 78 79 93 94 96 106 114 115 126
+STRING (259) 118
+FLOATVAL (260) 121
+INTVAL (261) 123
 DEALLOCATE (262)
 PARAMETERS (263)
 INTERSECT (264)
 TEMPORARY (265)
 TIMESTAMP (266)
-DISTINCT (267)
+DISTINCT (267) 80
 NVARCHAR (268)
 RESTRICT (269)
-TRUNCATE (270) 6
+TRUNCATE (270) 7
 ANALYZE (271)
-BETWEEN (272)
+BETWEEN (272) 92
 CASCADE (273)
 COLUMNS (274)
 CONTROL (275)
 DEFAULT (276)
 EXECUTE (277)
 EXPLAIN (278)
-INTEGER (279) 15
+INTEGER (279) 108
 NATURAL (280)
 PREPARE (281)
 PRIMARY (282)
 SCHEMAS (283)
 SPATIAL (284)
-VARCHAR (285) 14
+VARCHAR (285) 107
 VIRTUAL (286)
 DESCRIBE (287)
 BEFORE (288)
 COLUMN (289)
-CREATE (290) 8
-DELETE (291) 5
+CREATE (290) 9
+DELETE (291) 6
 DIRECT (292)
 DOUBLE (293)
 ESCAPE (294)
 EXCEPT (295)
-EXISTS (296) 9
-EXTRACT (297)
-CAST (298)
+EXISTS (296) 69 70 102
+EXTRACT (297) 82
+CAST (298) 83
 FORMAT (299)
 GLOBAL (300)
 HAVING (301)
 IMPORT (302)
-INSERT (303) 7
-ISNULL (304)
+INSERT (303) 8
+ISNULL (304) 45
 OFFSET (305)
 RENAME (306)
 SCHEMA (307)
@@ -315,8 +417,8 @@ SORTED (309)
 TABLES (310)
 UNIQUE (311)
 UNLOAD (312)
-UPDATE (313)
-VALUES (314) 7
+UPDATE (313) 10
+VALUES (314) 8
 AFTER (315)
 ALTER (316)
 CROSS (317)
@@ -332,113 +434,192 @@ MINUS (326)
 ORDER (327)
 OUTER (328)
 RIGHT (329)
-TABLE (330) 8
+TABLE (330) 9
 UNION (331)
 USING (332)
-WHERE (333)
+WHERE (333) 14
 CALL (334)
-CASE (335)
+CASE (335) 65 66 67 68
 CHAR (336)
 COPY (337)
 DATE (338)
 DATETIME (339)
 DESC (340)
 DROP (341)
-ELSE (342)
+ELSE (342) 66 68
 FILE (343)
-FROM (344) 5
+FROM (344) 6 82
 FULL (345)
 HASH (346)
 HINT (347)
-INTO (348) 7
+INTO (348) 8
 JOIN (349)
 LEFT (350)
-LIKE (351)
+LIKE (351) 55 56
 LOAD (352)
 LONG (353)
-NULL (354) 16 17
+NULL (354) 46 47 109 110 124
 PLAN (355)
 SHOW (356)
 TEXT (357)
-THEN (358)
+THEN (358) 63 64
 TIME (359)
 VIEW (360)
-WHEN (361)
+WHEN (361) 63 64
 WITH (362)
 ADD (363)
 ALL (364)
-AND (365)
+AND (365) 59 92
 ASC (366)
-END (367)
+END (367) 65 66 67 68
 FOR (368)
 INT (369)
 KEY (370)
-NOT (371) 9 17
+NOT (371) 44 47 56 62 70 102 110
 OFF (372)
-SET (373)
+SET (373) 10
 TOP (374)
-AS (375)
+AS (375) 24 83
 BY (376)
-IF (377) 9
-IN (378)
-IS (379)
+IF (377) 102
+IN (378) 61 62
+IS (379) 46 47
 OF (380)
 ON (381)
-OR (382)
+OR (382) 60
 TO (383)
-ARRAY (384)
-CONCAT (385)
-ILIKE (386)
-SECOND (387)
-MINUTE (388)
-HOUR (389)
-DAY (390)
-MONTH (391)
-YEAR (392)
-TRUE (393)
-FALSE (394)
+ARRAY (384) 90
+CONCAT (385) 58
+ILIKE (386) 57
+SECOND (387) 84
+MINUTE (388) 85
+HOUR (389) 86
+DAY (390) 87
+MONTH (391) 88
+YEAR (392) 89
+TRUE (393) 119
+FALSE (394) 120
 TRANSACTION (395)
 BEGIN (396)
 COMMIT (397)
 ROLLBACK (398)
+EQUALS (399) 72
+NOTEQUALS (400) 73
+LESS (401)
+GREATER (402)
+LESSEQ (403) 76
+GREATEREQ (404) 77
+NOTNULL (405)
+UMINUS (406)
 
 
 Nonterminals, with rules where they appear
 
-$accept (147)
+$accept (168)
     on left: 0
-preparable_statement (148)
-    on left: 1 2 3 4, on right: 0
-delete_statement (149)
-    on left: 5, on right: 1
-truncate_statement (150)
-    on left: 6, on right: 2
-insert_statement (151)
-    on left: 7, on right: 3
-create_statement (152)
-    on left: 8, on right: 4
-opt_not_exists (153)
-    on left: 9 10, on right: 8
-column_def_commalist (154)
-    on left: 11 12, on right: 8 12
-column_def (155)
+preparable_statement (169)
+    on left: 1 2 3 4 5, on right: 0
+delete_statement (170)
+    on left: 6, on right: 1
+truncate_statement (171)
+    on left: 7, on right: 2
+insert_statement (172)
+    on left: 8, on right: 3
+create_statement (173)
+    on left: 9, on right: 4
+update_statement (174)
+    on left: 10, on right: 5
+update_clause_commalist (175)
+    on left: 11 12, on right: 10 12
+update_clause (176)
     on left: 13, on right: 11 12
-column_type (156)
-    on left: 14 15, on right: 13
-opt_column_nullable (157)
-    on left: 16 17 18, on right: 13
-opt_column_list (158)
-    on left: 19 20, on right: 7
-ident_commalist (159)
-    on left: 21 22, on right: 19 22
-literal_list (160)
-    on left: 23 24, on right: 7 24
-literal (161)
-    on left: 25, on right: 23 24
-num_literal (162)
-    on left: 26 27, on right: 25
-table_name (163)
-    on left: 28, on right: 5 6 7 8
+opt_where (177)
+    on left: 14 15, on right: 10
+table_ref_name_no_alias (178)
+    on left: 16, on right: 10
+table_name (179)
+    on left: 17 18 126, on right: 6 7 8 9 16
+expr_list (180)
+    on left: 19 20, on right: 20 61 62 79 90
+expr_alias (181)
+    on left: 21, on right: 19 20
+opt_alias (182)
+    on left: 22 23, on right: 21
+alias (183)
+    on left: 24 25, on right: 22
+expr (184)
+    on left: 26 27 28 29 30, on right: 13 14 21 31 59 60 63 64 65 66
+    68 82 83
+operand (185)
+    on left: 31 32 33 34 35 36 37 38 39 40, on right: 26 43 44 45 46
+    47 49 50 51 52 53 54 55 56 57 58 61 62 71 72 73 74 75 76 77 91
+    92
+scalar_expr (186)
+    on left: 41 42, on right: 33
+unary_expr (187)
+    on left: 43 44 45 46 47, on right: 34
+binary_expr (188)
+    on left: 48 49 50 51 52 53 54 55 56 57 58, on right: 35
+logic_expr (189)
+    on left: 59 60, on right: 28
+in_expr (190)
+    on left: 61 62, on right: 30
+case_list (191)
+    on left: 63 64, on right: 64 65 66 67 68
+case_expr (192)
+    on left: 65 66 67 68, on right: 36
+exists_expr (193)
+    on left: 69 70, on right: 29
+comp_expr (194)
+    on left: 71 72 73 74 75 76 77, on right: 48
+function_expr (195)
+    on left: 78 79, on right: 37
+opt_distinct (196)
+    on left: 80 81, on right: 79
+extract_expr (197)
+    on left: 82, on right: 38
+cast_expr (198)
+    on left: 83, on right: 39
+datetime_field (199)
+    on left: 84 85 86 87 88 89, on right: 82
+array_expr (200)
+    on left: 90, on right: 40
+array_index (201)
+    on left: 91, on right: 32
+between_expr (202)
+    on left: 92, on right: 27
+column_name (203)
+    on left: 93 94 95 96, on right: 41
+literal (204)
+    on left: 97 98 99 100 101, on right: 42 116 117
+opt_not_exists (205)
+    on left: 102 103, on right: 9
+column_def_commalist (206)
+    on left: 104 105, on right: 9 105
+column_def (207)
+    on left: 106, on right: 104 105
+column_type (208)
+    on left: 107 108, on right: 83 106
+opt_column_nullable (209)
+    on left: 109 110 111, on right: 106
+opt_column_list (210)
+    on left: 112 113, on right: 8
+ident_commalist (211)
+    on left: 114 115, on right: 112 115
+literal_list (212)
+    on left: 116 117, on right: 8 117
+string_literal (213)
+    on left: 118, on right: 97
+bool_literal (214)
+    on left: 119 120, on right: 98
+num_literal (215)
+    on left: 121 122, on right: 99
+int_literal (216)
+    on left: 123, on right: 91 122
+null_literal (217)
+    on left: 124, on right: 100
+param_expr (218)
+    on left: 125, on right: 101
 
 
 State 0
@@ -449,426 +630,4167 @@ State 0
     CREATE    shift, and go to state 2
     DELETE    shift, and go to state 3
     INSERT    shift, and go to state 4
+    UPDATE    shift, and go to state 5
 
-    preparable_statement  go to state 5
-    delete_statement      go to state 6
-    truncate_statement    go to state 7
-    insert_statement      go to state 8
-    create_statement      go to state 9
+    preparable_statement  转到状态 6
+    delete_statement      转到状态 7
+    truncate_statement    转到状态 8
+    insert_statement      转到状态 9
+    create_statement      转到状态 10
+    update_statement      转到状态 11
 
 
 State 1
 
-    6 truncate_statement: TRUNCATE . table_name
+    7 truncate_statement: TRUNCATE . table_name
 
-    IDENTIFIER  shift, and go to state 10
+    IDENTIFIER  shift, and go to state 12
 
-    table_name  go to state 11
+    table_name  转到状态 13
 
 
 State 2
 
-    8 create_statement: CREATE . TABLE opt_not_exists table_name '(' column_def_commalist ')'
+    9 create_statement: CREATE . TABLE opt_not_exists table_name '(' column_def_commalist ')'
 
-    TABLE  shift, and go to state 12
+    TABLE  shift, and go to state 14
 
 
 State 3
 
-    5 delete_statement: DELETE . FROM table_name
+    6 delete_statement: DELETE . FROM table_name
 
-    FROM  shift, and go to state 13
+    FROM  shift, and go to state 15
 
 
 State 4
 
-    7 insert_statement: INSERT . INTO table_name opt_column_list VALUES '(' literal_list ')'
+    8 insert_statement: INSERT . INTO table_name opt_column_list VALUES '(' literal_list ')'
 
-    INTO  shift, and go to state 14
+    INTO  shift, and go to state 16
 
 
 State 5
 
-    0 $accept: preparable_statement . $end
+   10 update_statement: UPDATE . table_ref_name_no_alias SET update_clause_commalist opt_where
 
-    $end  shift, and go to state 15
+    IDENTIFIER  shift, and go to state 12
+
+    table_ref_name_no_alias  转到状态 17
+    table_name               转到状态 18
 
 
 State 6
+
+    0 $accept: preparable_statement . $end
+
+    $end  shift, and go to state 19
+
+
+State 7
 
     1 preparable_statement: delete_statement .
 
     $default  reduce using rule 1 (preparable_statement)
 
 
-State 7
+State 8
 
     2 preparable_statement: truncate_statement .
 
     $default  reduce using rule 2 (preparable_statement)
 
 
-State 8
+State 9
 
     3 preparable_statement: insert_statement .
 
     $default  reduce using rule 3 (preparable_statement)
 
 
-State 9
+State 10
 
     4 preparable_statement: create_statement .
 
     $default  reduce using rule 4 (preparable_statement)
 
 
-State 10
-
-   28 table_name: IDENTIFIER .
-
-    $default  reduce using rule 28 (table_name)
-
-
 State 11
 
-    6 truncate_statement: TRUNCATE table_name .
+    5 preparable_statement: update_statement .
 
-    $default  reduce using rule 6 (truncate_statement)
+    $default  reduce using rule 5 (preparable_statement)
 
 
 State 12
 
-    8 create_statement: CREATE TABLE . opt_not_exists table_name '(' column_def_commalist ')'
+   17 table_name: IDENTIFIER .
+   18           | IDENTIFIER . '.' IDENTIFIER
+  126           | IDENTIFIER .
 
-    IF  shift, and go to state 16
+    '.'  shift, and go to state 20
 
-    $default  reduce using rule 10 (opt_not_exists)
-
-    opt_not_exists  go to state 17
+    $end      reduce using rule 17 (table_name)
+    $end      [reduce using rule 126 (table_name)]
+    VALUES    reduce using rule 17 (table_name)
+    VALUES    [reduce using rule 126 (table_name)]
+    SET       reduce using rule 17 (table_name)
+    SET       [reduce using rule 126 (table_name)]
+    '('       reduce using rule 17 (table_name)
+    '('       [reduce using rule 126 (table_name)]
+    $default  reduce using rule 17 (table_name)
 
 
 State 13
 
-    5 delete_statement: DELETE FROM . table_name
+    7 truncate_statement: TRUNCATE table_name .
 
-    IDENTIFIER  shift, and go to state 10
-
-    table_name  go to state 18
+    $default  reduce using rule 7 (truncate_statement)
 
 
 State 14
 
-    7 insert_statement: INSERT INTO . table_name opt_column_list VALUES '(' literal_list ')'
+    9 create_statement: CREATE TABLE . opt_not_exists table_name '(' column_def_commalist ')'
 
-    IDENTIFIER  shift, and go to state 10
+    IF  shift, and go to state 21
 
-    table_name  go to state 19
+    $default  reduce using rule 103 (opt_not_exists)
+
+    opt_not_exists  转到状态 22
 
 
 State 15
 
-    0 $accept: preparable_statement $end .
+    6 delete_statement: DELETE FROM . table_name
 
-    $default  accept
+    IDENTIFIER  shift, and go to state 12
+
+    table_name  转到状态 23
 
 
 State 16
 
-    9 opt_not_exists: IF . NOT EXISTS
+    8 insert_statement: INSERT INTO . table_name opt_column_list VALUES '(' literal_list ')'
 
-    NOT  shift, and go to state 20
+    IDENTIFIER  shift, and go to state 12
+
+    table_name  转到状态 24
 
 
 State 17
 
-    8 create_statement: CREATE TABLE opt_not_exists . table_name '(' column_def_commalist ')'
+   10 update_statement: UPDATE table_ref_name_no_alias . SET update_clause_commalist opt_where
 
-    IDENTIFIER  shift, and go to state 10
-
-    table_name  go to state 21
+    SET  shift, and go to state 25
 
 
 State 18
 
-    5 delete_statement: DELETE FROM table_name .
+   16 table_ref_name_no_alias: table_name .
 
-    $default  reduce using rule 5 (delete_statement)
+    $default  reduce using rule 16 (table_ref_name_no_alias)
 
 
 State 19
 
-    7 insert_statement: INSERT INTO table_name . opt_column_list VALUES '(' literal_list ')'
+    0 $accept: preparable_statement $end .
 
-    '('  shift, and go to state 22
-
-    $default  reduce using rule 20 (opt_column_list)
-
-    opt_column_list  go to state 23
+    $default  接受
 
 
 State 20
 
-    9 opt_not_exists: IF NOT . EXISTS
+   18 table_name: IDENTIFIER '.' . IDENTIFIER
 
-    EXISTS  shift, and go to state 24
+    IDENTIFIER  shift, and go to state 26
 
 
 State 21
 
-    8 create_statement: CREATE TABLE opt_not_exists table_name . '(' column_def_commalist ')'
+  102 opt_not_exists: IF . NOT EXISTS
 
-    '('  shift, and go to state 25
+    NOT  shift, and go to state 27
 
 
 State 22
 
-   19 opt_column_list: '(' . ident_commalist ')'
+    9 create_statement: CREATE TABLE opt_not_exists . table_name '(' column_def_commalist ')'
 
-    IDENTIFIER  shift, and go to state 26
+    IDENTIFIER  shift, and go to state 12
 
-    ident_commalist  go to state 27
+    table_name  转到状态 28
 
 
 State 23
 
-    7 insert_statement: INSERT INTO table_name opt_column_list . VALUES '(' literal_list ')'
+    6 delete_statement: DELETE FROM table_name .
 
-    VALUES  shift, and go to state 28
+    $default  reduce using rule 6 (delete_statement)
 
 
 State 24
 
-    9 opt_not_exists: IF NOT EXISTS .
+    8 insert_statement: INSERT INTO table_name . opt_column_list VALUES '(' literal_list ')'
 
-    $default  reduce using rule 9 (opt_not_exists)
+    '('  shift, and go to state 29
+
+    $default  reduce using rule 113 (opt_column_list)
+
+    opt_column_list  转到状态 30
 
 
 State 25
 
-    8 create_statement: CREATE TABLE opt_not_exists table_name '(' . column_def_commalist ')'
+   10 update_statement: UPDATE table_ref_name_no_alias SET . update_clause_commalist opt_where
 
-    IDENTIFIER  shift, and go to state 29
+    IDENTIFIER  shift, and go to state 31
 
-    column_def_commalist  go to state 30
-    column_def            go to state 31
+    update_clause_commalist  转到状态 32
+    update_clause            转到状态 33
 
 
 State 26
 
-   21 ident_commalist: IDENTIFIER .
+   18 table_name: IDENTIFIER '.' IDENTIFIER .
 
-    $default  reduce using rule 21 (ident_commalist)
+    $default  reduce using rule 18 (table_name)
 
 
 State 27
 
-   19 opt_column_list: '(' ident_commalist . ')'
-   22 ident_commalist: ident_commalist . ',' IDENTIFIER
+  102 opt_not_exists: IF NOT . EXISTS
 
-    ')'  shift, and go to state 32
-    ','  shift, and go to state 33
+    EXISTS  shift, and go to state 34
 
 
 State 28
 
-    7 insert_statement: INSERT INTO table_name opt_column_list VALUES . '(' literal_list ')'
+    9 create_statement: CREATE TABLE opt_not_exists table_name . '(' column_def_commalist ')'
 
-    '('  shift, and go to state 34
+    '('  shift, and go to state 35
 
 
 State 29
 
-   13 column_def: IDENTIFIER . column_type opt_column_nullable
+  112 opt_column_list: '(' . ident_commalist ')'
 
-    INTEGER  shift, and go to state 35
-    VARCHAR  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 36
 
-    column_type  go to state 37
+    ident_commalist  转到状态 37
 
 
 State 30
 
-    8 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist . ')'
-   12 column_def_commalist: column_def_commalist . ',' column_def
+    8 insert_statement: INSERT INTO table_name opt_column_list . VALUES '(' literal_list ')'
 
-    ')'  shift, and go to state 38
-    ','  shift, and go to state 39
+    VALUES  shift, and go to state 38
 
 
 State 31
 
-   11 column_def_commalist: column_def .
+   13 update_clause: IDENTIFIER . '=' expr
 
-    $default  reduce using rule 11 (column_def_commalist)
+    '='  shift, and go to state 39
 
 
 State 32
 
-   19 opt_column_list: '(' ident_commalist ')' .
+   10 update_statement: UPDATE table_ref_name_no_alias SET update_clause_commalist . opt_where
+   12 update_clause_commalist: update_clause_commalist . ',' update_clause
 
-    $default  reduce using rule 19 (opt_column_list)
+    WHERE  shift, and go to state 40
+    ','    shift, and go to state 41
+
+    $default  reduce using rule 15 (opt_where)
+
+    opt_where  转到状态 42
 
 
 State 33
 
-   22 ident_commalist: ident_commalist ',' . IDENTIFIER
+   11 update_clause_commalist: update_clause .
 
-    IDENTIFIER  shift, and go to state 40
+    $default  reduce using rule 11 (update_clause_commalist)
 
 
 State 34
 
-    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' . literal_list ')'
+  102 opt_not_exists: IF NOT EXISTS .
 
-    FLOATVAL  shift, and go to state 41
-    INTVAL    shift, and go to state 42
-
-    literal_list  go to state 43
-    literal       go to state 44
-    num_literal   go to state 45
+    $default  reduce using rule 102 (opt_not_exists)
 
 
 State 35
 
-   15 column_type: INTEGER .
+    9 create_statement: CREATE TABLE opt_not_exists table_name '(' . column_def_commalist ')'
 
-    $default  reduce using rule 15 (column_type)
+    IDENTIFIER  shift, and go to state 43
+
+    column_def_commalist  转到状态 44
+    column_def            转到状态 45
 
 
 State 36
 
-   14 column_type: VARCHAR .
+  114 ident_commalist: IDENTIFIER .
 
-    $default  reduce using rule 14 (column_type)
+    $default  reduce using rule 114 (ident_commalist)
 
 
 State 37
 
-   13 column_def: IDENTIFIER column_type . opt_column_nullable
+  112 opt_column_list: '(' ident_commalist . ')'
+  115 ident_commalist: ident_commalist . ',' IDENTIFIER
 
-    NULL  shift, and go to state 46
-    NOT   shift, and go to state 47
-
-    $default  reduce using rule 18 (opt_column_nullable)
-
-    opt_column_nullable  go to state 48
+    ')'  shift, and go to state 46
+    ','  shift, and go to state 47
 
 
 State 38
 
-    8 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')' .
+    8 insert_statement: INSERT INTO table_name opt_column_list VALUES . '(' literal_list ')'
 
-    $default  reduce using rule 8 (create_statement)
+    '('  shift, and go to state 48
 
 
 State 39
 
-   12 column_def_commalist: column_def_commalist ',' . column_def
+   13 update_clause: IDENTIFIER '=' . expr
 
-    IDENTIFIER  shift, and go to state 29
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
 
-    column_def  go to state 49
+    expr            转到状态 66
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
 
 
 State 40
 
-   22 ident_commalist: ident_commalist ',' IDENTIFIER .
+   14 opt_where: WHERE . expr
 
-    $default  reduce using rule 22 (ident_commalist)
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 90
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
 
 
 State 41
 
-   26 num_literal: FLOATVAL .
+   12 update_clause_commalist: update_clause_commalist ',' . update_clause
 
-    $default  reduce using rule 26 (num_literal)
+    IDENTIFIER  shift, and go to state 31
+
+    update_clause  转到状态 91
 
 
 State 42
 
-   27 num_literal: INTVAL .
+   10 update_statement: UPDATE table_ref_name_no_alias SET update_clause_commalist opt_where .
 
-    $default  reduce using rule 27 (num_literal)
+    $default  reduce using rule 10 (update_statement)
 
 
 State 43
 
-    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list . ')'
-   24 literal_list: literal_list . ',' literal
+  106 column_def: IDENTIFIER . column_type opt_column_nullable
 
-    ')'  shift, and go to state 50
-    ','  shift, and go to state 51
+    INTEGER  shift, and go to state 92
+    VARCHAR  shift, and go to state 93
+
+    column_type  转到状态 94
 
 
 State 44
 
-   23 literal_list: literal .
+    9 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist . ')'
+  105 column_def_commalist: column_def_commalist . ',' column_def
 
-    $default  reduce using rule 23 (literal_list)
+    ')'  shift, and go to state 95
+    ','  shift, and go to state 96
 
 
 State 45
 
-   25 literal: num_literal .
+  104 column_def_commalist: column_def .
 
-    $default  reduce using rule 25 (literal)
+    $default  reduce using rule 104 (column_def_commalist)
 
 
 State 46
 
-   16 opt_column_nullable: NULL .
+  112 opt_column_list: '(' ident_commalist ')' .
 
-    $default  reduce using rule 16 (opt_column_nullable)
+    $default  reduce using rule 112 (opt_column_list)
 
 
 State 47
 
-   17 opt_column_nullable: NOT . NULL
+  115 ident_commalist: ident_commalist ',' . IDENTIFIER
 
-    NULL  shift, and go to state 52
+    IDENTIFIER  shift, and go to state 97
 
 
 State 48
 
-   13 column_def: IDENTIFIER column_type opt_column_nullable .
+    8 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' . literal_list ')'
 
-    $default  reduce using rule 13 (column_def)
+    STRING    shift, and go to state 50
+    FLOATVAL  shift, and go to state 51
+    INTVAL    shift, and go to state 52
+    NULL      shift, and go to state 57
+    TRUE      shift, and go to state 60
+    FALSE     shift, and go to state 61
+    '?'       shift, and go to state 65
+
+    literal         转到状态 98
+    literal_list    转到状态 99
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
 
 
 State 49
 
-   12 column_def_commalist: column_def_commalist ',' column_def .
+   78 function_expr: IDENTIFIER . '(' ')'
+   79              | IDENTIFIER . '(' opt_distinct expr_list ')'
+   93 column_name: IDENTIFIER .
+   94            | IDENTIFIER . '.' IDENTIFIER
+   96            | IDENTIFIER . '.' '*'
 
-    $default  reduce using rule 12 (column_def_commalist)
+    '('  shift, and go to state 100
+    '.'  shift, and go to state 101
+
+    $default  reduce using rule 93 (column_name)
 
 
 State 50
 
-    7 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')' .
+  118 string_literal: STRING .
 
-    $default  reduce using rule 7 (insert_statement)
+    $default  reduce using rule 118 (string_literal)
 
 
 State 51
 
-   24 literal_list: literal_list ',' . literal
+  121 num_literal: FLOATVAL .
 
-    FLOATVAL  shift, and go to state 41
-    INTVAL    shift, and go to state 42
-
-    literal      go to state 53
-    num_literal  go to state 45
+    $default  reduce using rule 121 (num_literal)
 
 
 State 52
 
-   17 opt_column_nullable: NOT NULL .
+  123 int_literal: INTVAL .
 
-    $default  reduce using rule 17 (opt_column_nullable)
+    $default  reduce using rule 123 (int_literal)
 
 
 State 53
 
-   24 literal_list: literal_list ',' literal .
+   69 exists_expr: EXISTS .
 
-    $default  reduce using rule 24 (literal_list)
+    $default  reduce using rule 69 (exists_expr)
+
+
+State 54
+
+   82 extract_expr: EXTRACT . '(' datetime_field FROM expr ')'
+
+    '('  shift, and go to state 102
+
+
+State 55
+
+   83 cast_expr: CAST . '(' expr AS column_type ')'
+
+    '('  shift, and go to state 103
+
+
+State 56
+
+   65 case_expr: CASE . expr case_list END
+   66          | CASE . expr case_list ELSE expr END
+   67          | CASE . case_list END
+   68          | CASE . case_list ELSE expr END
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    WHEN        shift, and go to state 104
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 105
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_list       转到状态 106
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 57
+
+  124 null_literal: NULL .
+
+    $default  reduce using rule 124 (null_literal)
+
+
+State 58
+
+   44 unary_expr: NOT . operand
+   70 exists_expr: NOT . EXISTS
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 107
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 109
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 59
+
+   90 array_expr: ARRAY . '[' expr_list ']'
+
+    '['  shift, and go to state 110
+
+
+State 60
+
+  119 bool_literal: TRUE .
+
+    $default  reduce using rule 119 (bool_literal)
+
+
+State 61
+
+  120 bool_literal: FALSE .
+
+    $default  reduce using rule 120 (bool_literal)
+
+
+State 62
+
+   43 unary_expr: '-' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 111
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 63
+
+   95 column_name: '*' .
+
+    $default  reduce using rule 95 (column_name)
+
+
+State 64
+
+   31 operand: '(' . expr ')'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 112
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 65
+
+  125 param_expr: '?' .
+
+    $default  reduce using rule 125 (param_expr)
+
+
+State 66
+
+   13 update_clause: IDENTIFIER '=' expr .
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+
+    AND  shift, and go to state 113
+    OR   shift, and go to state 114
+
+    $default  reduce using rule 13 (update_clause)
+
+
+State 67
+
+   26 expr: operand .
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   61 in_expr: operand . IN '(' expr_list ')'
+   62        | operand . NOT IN '(' expr_list ')'
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+   92 between_expr: operand . BETWEEN operand AND operand
+
+    BETWEEN    shift, and go to state 115
+    ISNULL     shift, and go to state 116
+    LIKE       shift, and go to state 117
+    NOT        shift, and go to state 118
+    IN         shift, and go to state 119
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    ILIKE      shift, and go to state 122
+    '='        shift, and go to state 123
+    EQUALS     shift, and go to state 124
+    NOTEQUALS  shift, and go to state 125
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    $default  reduce using rule 26 (expr)
+
+
+State 68
+
+   33 operand: scalar_expr .
+
+    $default  reduce using rule 33 (operand)
+
+
+State 69
+
+   34 operand: unary_expr .
+
+    $default  reduce using rule 34 (operand)
+
+
+State 70
+
+   35 operand: binary_expr .
+
+    $default  reduce using rule 35 (operand)
+
+
+State 71
+
+   28 expr: logic_expr .
+
+    $default  reduce using rule 28 (expr)
+
+
+State 72
+
+   30 expr: in_expr .
+
+    $default  reduce using rule 30 (expr)
+
+
+State 73
+
+   36 operand: case_expr .
+
+    $default  reduce using rule 36 (operand)
+
+
+State 74
+
+   29 expr: exists_expr .
+
+    $default  reduce using rule 29 (expr)
+
+
+State 75
+
+   48 binary_expr: comp_expr .
+
+    $default  reduce using rule 48 (binary_expr)
+
+
+State 76
+
+   37 operand: function_expr .
+
+    $default  reduce using rule 37 (operand)
+
+
+State 77
+
+   38 operand: extract_expr .
+
+    $default  reduce using rule 38 (operand)
+
+
+State 78
+
+   39 operand: cast_expr .
+
+    $default  reduce using rule 39 (operand)
+
+
+State 79
+
+   40 operand: array_expr .
+
+    $default  reduce using rule 40 (operand)
+
+
+State 80
+
+   32 operand: array_index .
+
+    $default  reduce using rule 32 (operand)
+
+
+State 81
+
+   27 expr: between_expr .
+
+    $default  reduce using rule 27 (expr)
+
+
+State 82
+
+   41 scalar_expr: column_name .
+
+    $default  reduce using rule 41 (scalar_expr)
+
+
+State 83
+
+   42 scalar_expr: literal .
+
+    $default  reduce using rule 42 (scalar_expr)
+
+
+State 84
+
+   97 literal: string_literal .
+
+    $default  reduce using rule 97 (literal)
+
+
+State 85
+
+   98 literal: bool_literal .
+
+    $default  reduce using rule 98 (literal)
+
+
+State 86
+
+   99 literal: num_literal .
+
+    $default  reduce using rule 99 (literal)
+
+
+State 87
+
+  122 num_literal: int_literal .
+
+    $default  reduce using rule 122 (num_literal)
+
+
+State 88
+
+  100 literal: null_literal .
+
+    $default  reduce using rule 100 (literal)
+
+
+State 89
+
+  101 literal: param_expr .
+
+    $default  reduce using rule 101 (literal)
+
+
+State 90
+
+   14 opt_where: WHERE expr .
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+
+    AND  shift, and go to state 113
+    OR   shift, and go to state 114
+
+    $default  reduce using rule 14 (opt_where)
+
+
+State 91
+
+   12 update_clause_commalist: update_clause_commalist ',' update_clause .
+
+    $default  reduce using rule 12 (update_clause_commalist)
+
+
+State 92
+
+  108 column_type: INTEGER .
+
+    $default  reduce using rule 108 (column_type)
+
+
+State 93
+
+  107 column_type: VARCHAR .
+
+    $default  reduce using rule 107 (column_type)
+
+
+State 94
+
+  106 column_def: IDENTIFIER column_type . opt_column_nullable
+
+    NULL  shift, and go to state 137
+    NOT   shift, and go to state 138
+
+    $default  reduce using rule 111 (opt_column_nullable)
+
+    opt_column_nullable  转到状态 139
+
+
+State 95
+
+    9 create_statement: CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')' .
+
+    $default  reduce using rule 9 (create_statement)
+
+
+State 96
+
+  105 column_def_commalist: column_def_commalist ',' . column_def
+
+    IDENTIFIER  shift, and go to state 43
+
+    column_def  转到状态 140
+
+
+State 97
+
+  115 ident_commalist: ident_commalist ',' IDENTIFIER .
+
+    $default  reduce using rule 115 (ident_commalist)
+
+
+State 98
+
+  116 literal_list: literal .
+
+    $default  reduce using rule 116 (literal_list)
+
+
+State 99
+
+    8 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list . ')'
+  117 literal_list: literal_list . ',' literal
+
+    ')'  shift, and go to state 141
+    ','  shift, and go to state 142
+
+
+State 100
+
+   78 function_expr: IDENTIFIER '(' . ')'
+   79              | IDENTIFIER '(' . opt_distinct expr_list ')'
+
+    DISTINCT  shift, and go to state 143
+    ')'       shift, and go to state 144
+
+    $default  reduce using rule 81 (opt_distinct)
+
+    opt_distinct  转到状态 145
+
+
+State 101
+
+   94 column_name: IDENTIFIER '.' . IDENTIFIER
+   96            | IDENTIFIER '.' . '*'
+
+    IDENTIFIER  shift, and go to state 146
+    '*'         shift, and go to state 147
+
+
+State 102
+
+   82 extract_expr: EXTRACT '(' . datetime_field FROM expr ')'
+
+    SECOND  shift, and go to state 148
+    MINUTE  shift, and go to state 149
+    HOUR    shift, and go to state 150
+    DAY     shift, and go to state 151
+    MONTH   shift, and go to state 152
+    YEAR    shift, and go to state 153
+
+    datetime_field  转到状态 154
+
+
+State 103
+
+   83 cast_expr: CAST '(' . expr AS column_type ')'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 155
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 104
+
+   63 case_list: WHEN . expr THEN expr
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 156
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 105
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   65 case_expr: CASE expr . case_list END
+   66          | CASE expr . case_list ELSE expr END
+
+    WHEN  shift, and go to state 104
+    AND   shift, and go to state 113
+    OR    shift, and go to state 114
+
+    case_list  转到状态 157
+
+
+State 106
+
+   64 case_list: case_list . WHEN expr THEN expr
+   67 case_expr: CASE case_list . END
+   68          | CASE case_list . ELSE expr END
+
+    ELSE  shift, and go to state 158
+    WHEN  shift, and go to state 159
+    END   shift, and go to state 160
+
+
+State 107
+
+   70 exists_expr: NOT EXISTS .
+
+    $default  reduce using rule 70 (exists_expr)
+
+
+State 108
+
+   44 unary_expr: NOT . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 109
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 109
+
+   44 unary_expr: NOT operand .
+   45           | operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    LIKE       shift, and go to state 117
+    NOT        shift, and go to state 161
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    ILIKE      shift, and go to state 122
+    '='        shift, and go to state 123
+    EQUALS     shift, and go to state 124
+    NOTEQUALS  shift, and go to state 125
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    $default  reduce using rule 44 (unary_expr)
+
+
+State 110
+
+   90 array_expr: ARRAY '[' . expr_list ']'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr_list       转到状态 162
+    expr_alias      转到状态 163
+    expr            转到状态 164
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 111
+
+   43 unary_expr: '-' operand .
+   45           | operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 43 (unary_expr)
+
+
+State 112
+
+   31 operand: '(' expr . ')'
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+
+    AND  shift, and go to state 113
+    OR   shift, and go to state 114
+    ')'  shift, and go to state 165
+
+
+State 113
+
+   59 logic_expr: expr AND . expr
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 166
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 114
+
+   60 logic_expr: expr OR . expr
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 167
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 115
+
+   92 between_expr: operand BETWEEN . operand AND operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 168
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 116
+
+   45 unary_expr: operand ISNULL .
+
+    $default  reduce using rule 45 (unary_expr)
+
+
+State 117
+
+   55 binary_expr: operand LIKE . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 169
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 118
+
+   56 binary_expr: operand NOT . LIKE operand
+   62 in_expr: operand NOT . IN '(' expr_list ')'
+
+    LIKE  shift, and go to state 170
+    IN    shift, and go to state 171
+
+
+State 119
+
+   61 in_expr: operand IN . '(' expr_list ')'
+
+    '('  shift, and go to state 172
+
+
+State 120
+
+   46 unary_expr: operand IS . NULL
+   47           | operand IS . NOT NULL
+
+    NULL  shift, and go to state 173
+    NOT   shift, and go to state 174
+
+
+State 121
+
+   58 binary_expr: operand CONCAT . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 175
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 122
+
+   57 binary_expr: operand ILIKE . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 176
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 123
+
+   71 comp_expr: operand '=' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 177
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 124
+
+   72 comp_expr: operand EQUALS . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 178
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 125
+
+   73 comp_expr: operand NOTEQUALS . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 179
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 126
+
+   74 comp_expr: operand '<' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 180
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 127
+
+   75 comp_expr: operand '>' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 181
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 128
+
+   76 comp_expr: operand LESSEQ . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 182
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 129
+
+   77 comp_expr: operand GREATEREQ . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 183
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 130
+
+   50 binary_expr: operand '+' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 184
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 131
+
+   49 binary_expr: operand '-' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 185
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 132
+
+   52 binary_expr: operand '*' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 186
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 133
+
+   51 binary_expr: operand '/' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 187
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 134
+
+   53 binary_expr: operand '%' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 188
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 135
+
+   54 binary_expr: operand '^' . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 189
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 136
+
+   91 array_index: operand '[' . int_literal ']'
+
+    INTVAL  shift, and go to state 52
+
+    int_literal  转到状态 190
+
+
+State 137
+
+  109 opt_column_nullable: NULL .
+
+    $default  reduce using rule 109 (opt_column_nullable)
+
+
+State 138
+
+  110 opt_column_nullable: NOT . NULL
+
+    NULL  shift, and go to state 191
+
+
+State 139
+
+  106 column_def: IDENTIFIER column_type opt_column_nullable .
+
+    $default  reduce using rule 106 (column_def)
+
+
+State 140
+
+  105 column_def_commalist: column_def_commalist ',' column_def .
+
+    $default  reduce using rule 105 (column_def_commalist)
+
+
+State 141
+
+    8 insert_statement: INSERT INTO table_name opt_column_list VALUES '(' literal_list ')' .
+
+    $default  reduce using rule 8 (insert_statement)
+
+
+State 142
+
+  117 literal_list: literal_list ',' . literal
+
+    STRING    shift, and go to state 50
+    FLOATVAL  shift, and go to state 51
+    INTVAL    shift, and go to state 52
+    NULL      shift, and go to state 57
+    TRUE      shift, and go to state 60
+    FALSE     shift, and go to state 61
+    '?'       shift, and go to state 65
+
+    literal         转到状态 192
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 143
+
+   80 opt_distinct: DISTINCT .
+
+    $default  reduce using rule 80 (opt_distinct)
+
+
+State 144
+
+   78 function_expr: IDENTIFIER '(' ')' .
+
+    $default  reduce using rule 78 (function_expr)
+
+
+State 145
+
+   79 function_expr: IDENTIFIER '(' opt_distinct . expr_list ')'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr_list       转到状态 193
+    expr_alias      转到状态 163
+    expr            转到状态 164
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 146
+
+   94 column_name: IDENTIFIER '.' IDENTIFIER .
+
+    $default  reduce using rule 94 (column_name)
+
+
+State 147
+
+   96 column_name: IDENTIFIER '.' '*' .
+
+    $default  reduce using rule 96 (column_name)
+
+
+State 148
+
+   84 datetime_field: SECOND .
+
+    $default  reduce using rule 84 (datetime_field)
+
+
+State 149
+
+   85 datetime_field: MINUTE .
+
+    $default  reduce using rule 85 (datetime_field)
+
+
+State 150
+
+   86 datetime_field: HOUR .
+
+    $default  reduce using rule 86 (datetime_field)
+
+
+State 151
+
+   87 datetime_field: DAY .
+
+    $default  reduce using rule 87 (datetime_field)
+
+
+State 152
+
+   88 datetime_field: MONTH .
+
+    $default  reduce using rule 88 (datetime_field)
+
+
+State 153
+
+   89 datetime_field: YEAR .
+
+    $default  reduce using rule 89 (datetime_field)
+
+
+State 154
+
+   82 extract_expr: EXTRACT '(' datetime_field . FROM expr ')'
+
+    FROM  shift, and go to state 194
+
+
+State 155
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   83 cast_expr: CAST '(' expr . AS column_type ')'
+
+    AND  shift, and go to state 113
+    AS   shift, and go to state 195
+    OR   shift, and go to state 114
+
+
+State 156
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   63 case_list: WHEN expr . THEN expr
+
+    THEN  shift, and go to state 196
+    AND   shift, and go to state 113
+    OR    shift, and go to state 114
+
+
+State 157
+
+   64 case_list: case_list . WHEN expr THEN expr
+   65 case_expr: CASE expr case_list . END
+   66          | CASE expr case_list . ELSE expr END
+
+    ELSE  shift, and go to state 197
+    WHEN  shift, and go to state 159
+    END   shift, and go to state 198
+
+
+State 158
+
+   68 case_expr: CASE case_list ELSE . expr END
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 199
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 159
+
+   64 case_list: case_list WHEN . expr THEN expr
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 200
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 160
+
+   67 case_expr: CASE case_list END .
+
+    $default  reduce using rule 67 (case_expr)
+
+
+State 161
+
+   56 binary_expr: operand NOT . LIKE operand
+
+    LIKE  shift, and go to state 170
+
+
+State 162
+
+   20 expr_list: expr_list . ',' expr_alias
+   90 array_expr: ARRAY '[' expr_list . ']'
+
+    ']'  shift, and go to state 201
+    ','  shift, and go to state 202
+
+
+State 163
+
+   19 expr_list: expr_alias .
+
+    $default  reduce using rule 19 (expr_list)
+
+
+State 164
+
+   21 expr_alias: expr . opt_alias
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+
+    IDENTIFIER  shift, and go to state 203
+    AND         shift, and go to state 113
+    AS          shift, and go to state 204
+    OR          shift, and go to state 114
+
+    $default  reduce using rule 23 (opt_alias)
+
+    opt_alias  转到状态 205
+    alias      转到状态 206
+
+
+State 165
+
+   31 operand: '(' expr ')' .
+
+    $default  reduce using rule 31 (operand)
+
+
+State 166
+
+   59 logic_expr: expr . AND expr
+   59           | expr AND expr .
+   60           | expr . OR expr
+
+    $default  reduce using rule 59 (logic_expr)
+
+
+State 167
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   60           | expr OR expr .
+
+    AND  shift, and go to state 113
+
+    $default  reduce using rule 60 (logic_expr)
+
+
+State 168
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+   92 between_expr: operand BETWEEN operand . AND operand
+
+    ISNULL     shift, and go to state 116
+    LIKE       shift, and go to state 117
+    AND        shift, and go to state 207
+    NOT        shift, and go to state 161
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    ILIKE      shift, and go to state 122
+    '='        shift, and go to state 123
+    EQUALS     shift, and go to state 124
+    NOTEQUALS  shift, and go to state 125
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+
+State 169
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   55            | operand LIKE operand .
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    LIKE       error (nonassociative)
+    ILIKE      error (nonassociative)
+    '='        error (nonassociative)
+    EQUALS     error (nonassociative)
+    NOTEQUALS  error (nonassociative)
+
+    $default  reduce using rule 55 (binary_expr)
+
+
+State 170
+
+   56 binary_expr: operand NOT LIKE . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 208
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 171
+
+   62 in_expr: operand NOT IN . '(' expr_list ')'
+
+    '('  shift, and go to state 209
+
+
+State 172
+
+   61 in_expr: operand IN '(' . expr_list ')'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr_list       转到状态 210
+    expr_alias      转到状态 163
+    expr            转到状态 164
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 173
+
+   46 unary_expr: operand IS NULL .
+
+    $default  reduce using rule 46 (unary_expr)
+
+
+State 174
+
+   47 unary_expr: operand IS NOT . NULL
+
+    NULL  shift, and go to state 211
+
+
+State 175
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   58            | operand CONCAT operand .
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    '['  shift, and go to state 136
+
+    $default  reduce using rule 58 (binary_expr)
+
+
+State 176
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   57            | operand ILIKE operand .
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    LIKE       error (nonassociative)
+    ILIKE      error (nonassociative)
+    '='        error (nonassociative)
+    EQUALS     error (nonassociative)
+    NOTEQUALS  error (nonassociative)
+
+    $default  reduce using rule 57 (binary_expr)
+
+
+State 177
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   71          | operand '=' operand .
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    LIKE       error (nonassociative)
+    ILIKE      error (nonassociative)
+    '='        error (nonassociative)
+    EQUALS     error (nonassociative)
+    NOTEQUALS  error (nonassociative)
+
+    $default  reduce using rule 71 (comp_expr)
+
+
+State 178
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   72          | operand EQUALS operand .
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    LIKE       error (nonassociative)
+    ILIKE      error (nonassociative)
+    '='        error (nonassociative)
+    EQUALS     error (nonassociative)
+    NOTEQUALS  error (nonassociative)
+
+    $default  reduce using rule 72 (comp_expr)
+
+
+State 179
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   73          | operand NOTEQUALS operand .
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    LIKE       error (nonassociative)
+    ILIKE      error (nonassociative)
+    '='        error (nonassociative)
+    EQUALS     error (nonassociative)
+    NOTEQUALS  error (nonassociative)
+
+    $default  reduce using rule 73 (comp_expr)
+
+
+State 180
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   74          | operand '<' operand .
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL  shift, and go to state 116
+    IS      shift, and go to state 120
+    CONCAT  shift, and go to state 121
+    '+'     shift, and go to state 130
+    '-'     shift, and go to state 131
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    '<'        error (nonassociative)
+    '>'        error (nonassociative)
+    LESSEQ     error (nonassociative)
+    GREATEREQ  error (nonassociative)
+
+    $default  reduce using rule 74 (comp_expr)
+
+
+State 181
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   75          | operand '>' operand .
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL  shift, and go to state 116
+    IS      shift, and go to state 120
+    CONCAT  shift, and go to state 121
+    '+'     shift, and go to state 130
+    '-'     shift, and go to state 131
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    '<'        error (nonassociative)
+    '>'        error (nonassociative)
+    LESSEQ     error (nonassociative)
+    GREATEREQ  error (nonassociative)
+
+    $default  reduce using rule 75 (comp_expr)
+
+
+State 182
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   76          | operand LESSEQ operand .
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL  shift, and go to state 116
+    IS      shift, and go to state 120
+    CONCAT  shift, and go to state 121
+    '+'     shift, and go to state 130
+    '-'     shift, and go to state 131
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    '<'        error (nonassociative)
+    '>'        error (nonassociative)
+    LESSEQ     error (nonassociative)
+    GREATEREQ  error (nonassociative)
+
+    $default  reduce using rule 76 (comp_expr)
+
+
+State 183
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   77          | operand GREATEREQ operand .
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL  shift, and go to state 116
+    IS      shift, and go to state 120
+    CONCAT  shift, and go to state 121
+    '+'     shift, and go to state 130
+    '-'     shift, and go to state 131
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    '<'        error (nonassociative)
+    '>'        error (nonassociative)
+    LESSEQ     error (nonassociative)
+    GREATEREQ  error (nonassociative)
+
+    $default  reduce using rule 77 (comp_expr)
+
+
+State 184
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   50            | operand '+' operand .
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 50 (binary_expr)
+
+
+State 185
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   49            | operand '-' operand .
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '*'     shift, and go to state 132
+    '/'     shift, and go to state 133
+    '%'     shift, and go to state 134
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 49 (binary_expr)
+
+
+State 186
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   52            | operand '*' operand .
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 52 (binary_expr)
+
+
+State 187
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   51            | operand '/' operand .
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 51 (binary_expr)
+
+
+State 188
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   53            | operand '%' operand .
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '^'     shift, and go to state 135
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 53 (binary_expr)
+
+
+State 189
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   54            | operand '^' operand .
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    CONCAT  shift, and go to state 121
+    '['     shift, and go to state 136
+
+    $default  reduce using rule 54 (binary_expr)
+
+
+State 190
+
+   91 array_index: operand '[' int_literal . ']'
+
+    ']'  shift, and go to state 212
+
+
+State 191
+
+  110 opt_column_nullable: NOT NULL .
+
+    $default  reduce using rule 110 (opt_column_nullable)
+
+
+State 192
+
+  117 literal_list: literal_list ',' literal .
+
+    $default  reduce using rule 117 (literal_list)
+
+
+State 193
+
+   20 expr_list: expr_list . ',' expr_alias
+   79 function_expr: IDENTIFIER '(' opt_distinct expr_list . ')'
+
+    ')'  shift, and go to state 213
+    ','  shift, and go to state 202
+
+
+State 194
+
+   82 extract_expr: EXTRACT '(' datetime_field FROM . expr ')'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 214
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 195
+
+   83 cast_expr: CAST '(' expr AS . column_type ')'
+
+    INTEGER  shift, and go to state 92
+    VARCHAR  shift, and go to state 93
+
+    column_type  转到状态 215
+
+
+State 196
+
+   63 case_list: WHEN expr THEN . expr
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 216
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 197
+
+   66 case_expr: CASE expr case_list ELSE . expr END
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 217
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 198
+
+   65 case_expr: CASE expr case_list END .
+
+    $default  reduce using rule 65 (case_expr)
+
+
+State 199
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   68 case_expr: CASE case_list ELSE expr . END
+
+    AND  shift, and go to state 113
+    END  shift, and go to state 218
+    OR   shift, and go to state 114
+
+
+State 200
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   64 case_list: case_list WHEN expr . THEN expr
+
+    THEN  shift, and go to state 219
+    AND   shift, and go to state 113
+    OR    shift, and go to state 114
+
+
+State 201
+
+   90 array_expr: ARRAY '[' expr_list ']' .
+
+    $default  reduce using rule 90 (array_expr)
+
+
+State 202
+
+   20 expr_list: expr_list ',' . expr_alias
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr_alias      转到状态 220
+    expr            转到状态 164
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 203
+
+   25 alias: IDENTIFIER .
+
+    $default  reduce using rule 25 (alias)
+
+
+State 204
+
+   24 alias: AS . IDENTIFIER
+
+    IDENTIFIER  shift, and go to state 221
+
+
+State 205
+
+   21 expr_alias: expr opt_alias .
+
+    $default  reduce using rule 21 (expr_alias)
+
+
+State 206
+
+   22 opt_alias: alias .
+
+    $default  reduce using rule 22 (opt_alias)
+
+
+State 207
+
+   92 between_expr: operand BETWEEN operand AND . operand
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 108
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    operand         转到状态 222
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    case_expr       转到状态 73
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 208
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   56            | operand NOT LIKE operand .
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+
+    ISNULL     shift, and go to state 116
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    LIKE       error (nonassociative)
+    ILIKE      error (nonassociative)
+    '='        error (nonassociative)
+    EQUALS     error (nonassociative)
+    NOTEQUALS  error (nonassociative)
+
+    $default  reduce using rule 56 (binary_expr)
+
+
+State 209
+
+   62 in_expr: operand NOT IN '(' . expr_list ')'
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr_list       转到状态 223
+    expr_alias      转到状态 163
+    expr            转到状态 164
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 210
+
+   20 expr_list: expr_list . ',' expr_alias
+   61 in_expr: operand IN '(' expr_list . ')'
+
+    ')'  shift, and go to state 224
+    ','  shift, and go to state 202
+
+
+State 211
+
+   47 unary_expr: operand IS NOT NULL .
+
+    $default  reduce using rule 47 (unary_expr)
+
+
+State 212
+
+   91 array_index: operand '[' int_literal ']' .
+
+    $default  reduce using rule 91 (array_index)
+
+
+State 213
+
+   79 function_expr: IDENTIFIER '(' opt_distinct expr_list ')' .
+
+    $default  reduce using rule 79 (function_expr)
+
+
+State 214
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   82 extract_expr: EXTRACT '(' datetime_field FROM expr . ')'
+
+    AND  shift, and go to state 113
+    OR   shift, and go to state 114
+    ')'  shift, and go to state 225
+
+
+State 215
+
+   83 cast_expr: CAST '(' expr AS column_type . ')'
+
+    ')'  shift, and go to state 226
+
+
+State 216
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   63 case_list: WHEN expr THEN expr .
+
+    AND  shift, and go to state 113
+    OR   shift, and go to state 114
+
+    $default  reduce using rule 63 (case_list)
+
+
+State 217
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   66 case_expr: CASE expr case_list ELSE expr . END
+
+    AND  shift, and go to state 113
+    END  shift, and go to state 227
+    OR   shift, and go to state 114
+
+
+State 218
+
+   68 case_expr: CASE case_list ELSE expr END .
+
+    $default  reduce using rule 68 (case_expr)
+
+
+State 219
+
+   64 case_list: case_list WHEN expr THEN . expr
+
+    IDENTIFIER  shift, and go to state 49
+    STRING      shift, and go to state 50
+    FLOATVAL    shift, and go to state 51
+    INTVAL      shift, and go to state 52
+    EXISTS      shift, and go to state 53
+    EXTRACT     shift, and go to state 54
+    CAST        shift, and go to state 55
+    CASE        shift, and go to state 56
+    NULL        shift, and go to state 57
+    NOT         shift, and go to state 58
+    ARRAY       shift, and go to state 59
+    TRUE        shift, and go to state 60
+    FALSE       shift, and go to state 61
+    '-'         shift, and go to state 62
+    '*'         shift, and go to state 63
+    '('         shift, and go to state 64
+    '?'         shift, and go to state 65
+
+    expr            转到状态 228
+    operand         转到状态 67
+    scalar_expr     转到状态 68
+    unary_expr      转到状态 69
+    binary_expr     转到状态 70
+    logic_expr      转到状态 71
+    in_expr         转到状态 72
+    case_expr       转到状态 73
+    exists_expr     转到状态 74
+    comp_expr       转到状态 75
+    function_expr   转到状态 76
+    extract_expr    转到状态 77
+    cast_expr       转到状态 78
+    array_expr      转到状态 79
+    array_index     转到状态 80
+    between_expr    转到状态 81
+    column_name     转到状态 82
+    literal         转到状态 83
+    string_literal  转到状态 84
+    bool_literal    转到状态 85
+    num_literal     转到状态 86
+    int_literal     转到状态 87
+    null_literal    转到状态 88
+    param_expr      转到状态 89
+
+
+State 220
+
+   20 expr_list: expr_list ',' expr_alias .
+
+    $default  reduce using rule 20 (expr_list)
+
+
+State 221
+
+   24 alias: AS IDENTIFIER .
+
+    $default  reduce using rule 24 (alias)
+
+
+State 222
+
+   45 unary_expr: operand . ISNULL
+   46           | operand . IS NULL
+   47           | operand . IS NOT NULL
+   49 binary_expr: operand . '-' operand
+   50            | operand . '+' operand
+   51            | operand . '/' operand
+   52            | operand . '*' operand
+   53            | operand . '%' operand
+   54            | operand . '^' operand
+   55            | operand . LIKE operand
+   56            | operand . NOT LIKE operand
+   57            | operand . ILIKE operand
+   58            | operand . CONCAT operand
+   71 comp_expr: operand . '=' operand
+   72          | operand . EQUALS operand
+   73          | operand . NOTEQUALS operand
+   74          | operand . '<' operand
+   75          | operand . '>' operand
+   76          | operand . LESSEQ operand
+   77          | operand . GREATEREQ operand
+   91 array_index: operand . '[' int_literal ']'
+   92 between_expr: operand BETWEEN operand AND operand .
+
+    ISNULL     shift, and go to state 116
+    LIKE       shift, and go to state 117
+    NOT        shift, and go to state 161
+    IS         shift, and go to state 120
+    CONCAT     shift, and go to state 121
+    ILIKE      shift, and go to state 122
+    '='        shift, and go to state 123
+    EQUALS     shift, and go to state 124
+    NOTEQUALS  shift, and go to state 125
+    '<'        shift, and go to state 126
+    '>'        shift, and go to state 127
+    LESSEQ     shift, and go to state 128
+    GREATEREQ  shift, and go to state 129
+    '+'        shift, and go to state 130
+    '-'        shift, and go to state 131
+    '*'        shift, and go to state 132
+    '/'        shift, and go to state 133
+    '%'        shift, and go to state 134
+    '^'        shift, and go to state 135
+    '['        shift, and go to state 136
+
+    $default  reduce using rule 92 (between_expr)
+
+
+State 223
+
+   20 expr_list: expr_list . ',' expr_alias
+   62 in_expr: operand NOT IN '(' expr_list . ')'
+
+    ')'  shift, and go to state 229
+    ','  shift, and go to state 202
+
+
+State 224
+
+   61 in_expr: operand IN '(' expr_list ')' .
+
+    $default  reduce using rule 61 (in_expr)
+
+
+State 225
+
+   82 extract_expr: EXTRACT '(' datetime_field FROM expr ')' .
+
+    $default  reduce using rule 82 (extract_expr)
+
+
+State 226
+
+   83 cast_expr: CAST '(' expr AS column_type ')' .
+
+    $default  reduce using rule 83 (cast_expr)
+
+
+State 227
+
+   66 case_expr: CASE expr case_list ELSE expr END .
+
+    $default  reduce using rule 66 (case_expr)
+
+
+State 228
+
+   59 logic_expr: expr . AND expr
+   60           | expr . OR expr
+   64 case_list: case_list WHEN expr THEN expr .
+
+    AND  shift, and go to state 113
+    OR   shift, and go to state 114
+
+    $default  reduce using rule 64 (case_list)
+
+
+State 229
+
+   62 in_expr: operand NOT IN '(' expr_list ')' .
+
+    $default  reduce using rule 62 (in_expr)

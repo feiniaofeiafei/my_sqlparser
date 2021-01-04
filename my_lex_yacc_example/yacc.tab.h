@@ -185,7 +185,15 @@ extern int yydebug;
     SQL_TRANSACTION = 395,
     SQL_BEGIN = 396,
     SQL_COMMIT = 397,
-    SQL_ROLLBACK = 398
+    SQL_ROLLBACK = 398,
+    SQL_EQUALS = 399,
+    SQL_NOTEQUALS = 400,
+    SQL_LESS = 401,
+    SQL_GREATER = 402,
+    SQL_LESSEQ = 403,
+    SQL_GREATEREQ = 404,
+    SQL_NOTNULL = 405,
+    SQL_UMINUS = 406
   };
 #endif
 

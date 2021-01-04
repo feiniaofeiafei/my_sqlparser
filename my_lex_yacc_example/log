@@ -1,9 +1,281 @@
-g++ -std=c++11 -c lex.yy.c
-g++ -std=c++11 -c yacc.tab.c
-g++ lex.yy.o yacc.tab.o -o main			 -lfl -ly
------------begin parsing file.txt
-id: T1
-a create stmt
-a preparable stmt of create_statement
---------the file is end
----------end parsing
+bison -d -v yacc.y --verbose
+yacc.y:67.29-42: 警告: symbol drop_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <drop_stmt>	    drop_statement
+                             ^^^^^^^^^^^^^^
+yacc.y:57.29-45: 警告: symbol execute_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <exec_stmt>	    execute_statement
+                             ^^^^^^^^^^^^^^^^^
+yacc.y:62.25-40: 警告: symbol export_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <export_stmt>     export_statement
+                         ^^^^^^^^^^^^^^^^
+yacc.y:70.29-37: 警告: symbol file_path is used, but is not defined as a token and has no rules [-Wother]
+ %type <sval> 		    file_path prepare_target_query
+                             ^^^^^^^^^
+yacc.y:93.39-47: 警告: symbol file_type is used, but is not defined as a token and has no rules [-Wother]
+ %type <import_type_t>	opt_file_type file_type
+                                       ^^^^^^^^^
+yacc.y:73.45-55: 警告: symbol from_clause is used, but is not defined as a token and has no rules [-Wother]
+ %type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+                                             ^^^^^^^^^^^
+yacc.y:78.103-106: 警告: symbol hint is used, but is not defined as a token and has no rules [-Wother]
+ %type <expr> 		    comp_expr opt_where join_condition opt_having case_expr case_list in_expr hint
+                                                                                                       ^^^^
+yacc.y:61.25-40: 警告: symbol import_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <import_stmt>     import_statement
+                         ^^^^^^^^^^^^^^^^
+yacc.y:74.29-39: 警告: symbol join_clause is used, but is not defined as a token and has no rules [-Wother]
+ %type <table>		    join_clause table_ref_name_no_alias
+                             ^^^^^^^^^^^
+yacc.y:78.49-62: 警告: symbol join_condition is used, but is not defined as a token and has no rules [-Wother]
+ %type <expr> 		    comp_expr opt_where join_condition opt_having case_expr case_list in_expr hint
+                                                 ^^^^^^^^^^^^^^
+yacc.y:73.99-122: 警告: symbol nonjoin_table_ref_atomic is used, but is not defined as a token and has no rules [-Wother]
+ %type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:71.88-94: 警告: symbol opt_all is used, but is not defined as a token and has no rules [-Wother]
+ %type <bval> 		    opt_not_exists opt_exists opt_distinct opt_column_nullable opt_all
+                                                                                        ^^^^^^^
+yacc.y:71.44-53: 警告: symbol opt_exists is used, but is not defined as a token and has no rules [-Wother]
+ %type <bval> 		    opt_not_exists opt_exists opt_distinct opt_column_nullable opt_all
+                                            ^^^^^^^^^^
+yacc.y:93.25-37: 警告: symbol opt_file_type is used, but is not defined as a token and has no rules [-Wother]
+ %type <import_type_t>	opt_file_type file_type
+                         ^^^^^^^^^^^^^
+yacc.y:73.29-43: 警告: symbol opt_from_clause is used, but is not defined as a token and has no rules [-Wother]
+ %type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+                             ^^^^^^^^^^^^^^^
+yacc.y:87.29-37: 警告: symbol opt_group is used, but is not defined as a token and has no rules [-Wother]
+ %type <group_t>		    opt_group
+                             ^^^^^^^^^
+yacc.y:78.64-73: 警告: symbol opt_having is used, but is not defined as a token and has no rules [-Wother]
+ %type <expr> 		    comp_expr opt_where join_condition opt_having case_expr case_list in_expr hint
+                                                                ^^^^^^^^^^
+yacc.y:72.29-41: 警告: symbol opt_join_type is used, but is not defined as a token and has no rules [-Wother]
+ %type <uval>		    opt_join_type
+                             ^^^^^^^^^^^^^
+yacc.y:80.29-37: 警告: symbol opt_limit is used, but is not defined as a token and has no rules [-Wother]
+ %type <limit>		    opt_limit opt_top
+                             ^^^^^^^^^
+yacc.y:82.29-42: 警告: symbol opt_order_type is used, but is not defined as a token and has no rules [-Wother]
+ %type <order_type>	    opt_order_type
+                             ^^^^^^^^^^^^^^
+yacc.y:88.29-43: 警告: symbol opt_table_alias is used, but is not defined as a token and has no rules [-Wother]
+ %type <alias_t>		    opt_table_alias table_alias opt_alias alias
+                             ^^^^^^^^^^^^^^^
+yacc.y:80.39-45: 警告: symbol opt_top is used, but is not defined as a token and has no rules [-Wother]
+ %type <limit>		    opt_limit opt_top
+                                       ^^^^^^^
+yacc.y:81.29-38: 警告: symbol order_desc is used, but is not defined as a token and has no rules [-Wother]
+ %type <order>		    order_desc
+                             ^^^^^^^^^^
+yacc.y:59.29-45: 警告: symbol prepare_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <prep_stmt>	    prepare_statement
+                             ^^^^^^^^^^^^^^^^^
+yacc.y:70.39-58: 警告: symbol prepare_target_query is used, but is not defined as a token and has no rules [-Wother]
+ %type <sval> 		    file_path prepare_target_query
+                                       ^^^^^^^^^^^^^^^^^^^^
+yacc.y:60.76-88: 警告: symbol select_clause is used, but is not defined as a token and has no rules [-Wother]
+ %type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+                                                                            ^^^^^^^^^^^^^
+yacc.y:60.60-74: error: symbol select_no_paren is used, but is not defined as a token and has no rules
+ %type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+                                                            ^^^^^^^^^^^^^^^
+yacc.y:60.25-40: 警告: symbol select_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+                         ^^^^^^^^^^^^^^^^
+yacc.y:60.42-58: 警告: symbol select_with_paren is used, but is not defined as a token and has no rules [-Wother]
+ %type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+                                          ^^^^^^^^^^^^^^^^^
+yacc.y:60.90-116: 警告: symbol select_within_set_operation is used, but is not defined as a token and has no rules [-Wother]
+ %type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:60.118-159: 警告: symbol select_within_set_operation_no_parentheses is used, but is not defined as a token and has no rules [-Wother]
+ %type <select_stmt>     select_statement select_with_paren select_no_paren select_clause select_within_set_operation select_within_set_operation_no_parentheses
+                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:90.25-36: 警告: symbol set_operator is used, but is not defined as a token and has no rules [-Wother]
+ %type <set_operator_t>  set_operator set_type
+                         ^^^^^^^^^^^^
+yacc.y:90.38-45: 警告: symbol set_type is used, but is not defined as a token and has no rules [-Wother]
+ %type <set_operator_t>  set_operator set_type
+                                      ^^^^^^^^
+yacc.y:68.29-42: 警告: symbol show_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <show_stmt>	    show_statement
+                             ^^^^^^^^^^^^^^
+yacc.y:56.29-37: 警告: symbol statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <statement> 	    statement preparable_statement
+                             ^^^^^^^^^
+yacc.y:55.29-42: 警告: symbol statement_list is used, but is not defined as a token and has no rules [-Wother]
+ %type <stmt_vec>	    statement_list
+                             ^^^^^^^^^^^^^^
+yacc.y:88.45-55: 警告: symbol table_alias is used, but is not defined as a token and has no rules [-Wother]
+ %type <alias_t>		    opt_table_alias table_alias opt_alias alias
+                                             ^^^^^^^^^^^
+yacc.y:73.57-65: 警告: symbol table_ref is used, but is not defined as a token and has no rules [-Wother]
+ %type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+                                                         ^^^^^^^^^
+yacc.y:73.67-82: 警告: symbol table_ref_atomic is used, but is not defined as a token and has no rules [-Wother]
+ %type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+                                                                   ^^^^^^^^^^^^^^^^
+yacc.y:73.84-97: 警告: symbol table_ref_name is used, but is not defined as a token and has no rules [-Wother]
+ %type <table> 		    opt_from_clause from_clause table_ref table_ref_atomic table_ref_name nonjoin_table_ref_atomic
+                                                                                    ^^^^^^^^^^^^^^
+yacc.y:58.29-49: 警告: symbol transaction_statement is used, but is not defined as a token and has no rules [-Wother]
+ %type <transaction_stmt>    transaction_statement
+                             ^^^^^^^^^^^^^^^^^^^^^
+yacc.y:89.29-44: 警告: symbol with_description is used, but is not defined as a token and has no rules [-Wother]
+ %type <with_description_t>  with_description
+                             ^^^^^^^^^^^^^^^^
+yacc.y:161.17-84: 警告: type clash on default action: <update_stmt> != <> [-Wother]
+ 		UPDATE table_ref_name_no_alias SET update_clause_commalist opt_where
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:169.17-35: 警告: type clash on default action: <update_t> != <sval> [-Wother]
+ 		IDENTIFIER '=' expr
+                 ^^^^^^^^^^^^^^^^^^^
+yacc.y:172.17-26: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		WHERE expr
+                 ^^^^^^^^^^
+yacc.y:173.10: 警告: empty rule for typed nonterminal, and no action [-Wother]
+ 	|	/*empty*/
+          ^
+yacc.y:176.17-26: 警告: type clash on default action: <table> != <table_name> [-Wother]
+ 		table_name
+                 ^^^^^^^^^^
+yacc.y:179.17-26: 警告: type clash on default action: <table_name> != <sval> [-Wother]
+ 		IDENTIFIER
+                 ^^^^^^^^^^
+yacc.y:180.17-41: 警告: type clash on default action: <table_name> != <sval> [-Wother]
+ 	|	IDENTIFIER '.' IDENTIFIER
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:195.10: 警告: empty rule for typed nonterminal, and no action [-Wother]
+ 	|	/*empty*/
+          ^
+yacc.y:198.17-29: 警告: type clash on default action: <alias_t> != <> [-Wother]
+ 		AS IDENTIFIER
+                 ^^^^^^^^^^^^^
+yacc.y:199.17-26: 警告: type clash on default action: <alias_t> != <sval> [-Wother]
+ 	|	IDENTIFIER
+                 ^^^^^^^^^^
+yacc.y:210.17-28: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		'(' expr ')'
+                 ^^^^^^^^^^^^
+yacc.y:227.17-27: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		'-' operand
+                 ^^^^^^^^^^^
+yacc.y:228.17-27: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	NOT operand
+                 ^^^^^^^^^^^
+yacc.y:257.17-35: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		WHEN expr THEN expr
+                 ^^^^^^^^^^^^^^^^^^^
+yacc.y:261.17-39: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		CASE expr case_list END
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:262.17-49: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	CASE expr case_list ELSE expr END
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:263.17-34: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	CASE case_list END
+                 ^^^^^^^^^^^^^^^^^^
+yacc.y:264.17-44: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	CASE case_list ELSE expr END
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:267.17-22: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		EXISTS
+                 ^^^^^^
+yacc.y:268.17-26: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	NOT EXISTS
+                 ^^^^^^^^^^
+yacc.y:282.17-34: 警告: type clash on default action: <expr> != <sval> [-Wother]
+ 		IDENTIFIER '(' ')'
+                 ^^^^^^^^^^^^^^^^^^
+yacc.y:283.17-56: 警告: type clash on default action: <expr> != <sval> [-Wother]
+ 	|	IDENTIFIER '('opt_distinct expr_list ')'
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:286.17-24: 警告: type clash on default action: <bval> != <> [-Wother]
+ 		DISTINCT
+                 ^^^^^^^^
+yacc.y:287.10: 警告: empty rule for typed nonterminal, and no action [-Wother]
+ 	|	/*empty*/
+          ^
+yacc.y:290.17-56: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		EXTRACT '(' datetime_field FROM expr ')'
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:293.17-48: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		CAST '(' expr AS column_type ')'
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:296.17-22: 警告: type clash on default action: <datetime_field> != <> [-Wother]
+ 		SECOND
+                 ^^^^^^
+yacc.y:297.17-22: 警告: type clash on default action: <datetime_field> != <> [-Wother]
+ 	|	MINUTE
+                 ^^^^^^
+yacc.y:298.17-20: 警告: type clash on default action: <datetime_field> != <> [-Wother]
+ 	|	HOUR
+                 ^^^^
+yacc.y:299.17-19: 警告: type clash on default action: <datetime_field> != <> [-Wother]
+ 	|	DAY
+                 ^^^
+yacc.y:300.17-21: 警告: type clash on default action: <datetime_field> != <> [-Wother]
+ 	|	MONTH
+                 ^^^^^
+yacc.y:301.17-20: 警告: type clash on default action: <datetime_field> != <> [-Wother]
+ 	|	YEAR
+                 ^^^^
+yacc.y:304.17-39: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		ARRAY '[' expr_list ']'
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:313.17-26: 警告: type clash on default action: <expr> != <sval> [-Wother]
+ 		IDENTIFIER
+                 ^^^^^^^^^^
+yacc.y:314.17-41: 警告: type clash on default action: <expr> != <sval> [-Wother]
+ 	|	IDENTIFIER '.' IDENTIFIER
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:315.17-19: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	'*'
+                 ^^^
+yacc.y:316.17-34: 警告: type clash on default action: <expr> != <sval> [-Wother]
+ 	|	IDENTIFIER '.' '*'
+                 ^^^^^^^^^^^^^^^^^^
+yacc.y:326.17-29: 警告: type clash on default action: <bval> != <> [-Wother]
+ 		IF NOT EXISTS
+                 ^^^^^^^^^^^^^
+yacc.y:327.10: 警告: empty rule for typed nonterminal, and no action [-Wother]
+ 	|	/*empty*/
+          ^
+yacc.y:335.17-58: 警告: type clash on default action: <column_t> != <sval> [-Wother]
+ 		IDENTIFIER column_type opt_column_nullable
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+yacc.y:338.17-23: 警告: type clash on default action: <column_type_t> != <> [-Wother]
+ 		VARCHAR
+                 ^^^^^^^
+yacc.y:339.17-23: 警告: type clash on default action: <column_type_t> != <> [-Wother]
+ 	|	INTEGER
+                 ^^^^^^^
+yacc.y:342.17-20: 警告: type clash on default action: <bval> != <> [-Wother]
+ 		NULL
+                 ^^^^
+yacc.y:343.17-24: 警告: type clash on default action: <bval> != <> [-Wother]
+ 	|	NOT NULL
+                 ^^^^^^^^
+yacc.y:344.10: 警告: empty rule for typed nonterminal, and no action [-Wother]
+ 	|	/*empty*/
+          ^
+yacc.y:363.17-22: 警告: type clash on default action: <expr> != <sval> [-Wother]
+ 		STRING
+                 ^^^^^^
+yacc.y:366.17-20: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		TRUE
+                 ^^^^
+yacc.y:367.17-21: 警告: type clash on default action: <expr> != <> [-Wother]
+ 	|	FALSE
+                 ^^^^^
+yacc.y:378.17-22: 警告: type clash on default action: <expr> != <ival> [-Wother]
+ 		INTVAL
+                 ^^^^^^
+yacc.y:381.17-20: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		NULL
+                 ^^^^
+yacc.y:384.17-19: 警告: type clash on default action: <expr> != <> [-Wother]
+ 		'?'
+                 ^^^
+make: *** [yacc.tab.h] 错误 1

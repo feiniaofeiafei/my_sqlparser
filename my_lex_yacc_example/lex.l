@@ -151,6 +151,13 @@ BEGIN       TOKEN(BEGIN)
 ROLLBACK    TOKEN(ROLLBACK)
 COMMIT      TOKEN(COMMIT)
 
+"=="		TOKEN(EQUALS)
+"!=" 		TOKEN(NOTEQUALS)
+"<>" 		TOKEN(NOTEQUALS)
+"<="		TOKEN(LESSEQ)
+">="		TOKEN(GREATEREQ)
+"||"		TOKEN(CONCAT)
+
 [A-Za-z][A-Za-z0-9]* {
 	yylval.sval = yytext;
 	return SQL_IDENTIFIER;
