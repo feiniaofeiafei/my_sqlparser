@@ -135,11 +135,79 @@ preparable_statement:
 		update_statement{
 			cout<<"a preparable stmt of update_statement"<<endl;
 		}
-	/*
+	
 	|	select_statement{
 			cout<<"a preparable stmt of select_statement"<<endl;
 		}
-		*/
+	;
+
+select_statement:
+		select_with_paren
+	|	select_no_paren
+	;
+select_with_paren:
+		'(' select_no_paren ')'
+	|	'(' select_with_paren ')'
+	;
+select_no_paren:
+		select_clause opt_order opt_limit
+	;
+select_clause:
+		SELECT opt_top opt_distinct select_list opt_from_clause opt_where opt_group 
+	;
+opt_distinct:
+		DISTINCT
+	|	/*empty*/
+	;
+select_list:
+		expr_list
+	;
+opt_from_clause:
+		from_clause
+	|	/*empty*/
+	;
+from_clause:
+	FROM table_ref
+	;
+opt_where:
+		WHERE expr
+	|	/*empty*/
+	;
+opt_group:
+		GROUP BY expr_list opt_having
+	|	/*empty*/
+	;
+opt_having:
+		HAVING expr
+	|	/*empty*/
+	;
+opt_order:
+		ORDER BY order_list
+	|	/*empty*/
+	;
+order_list:
+		order_desc
+	|	order_list ',' order_desc
+	;
+order_desc:
+		expr opt_order_type
+	;
+opt_order_type:
+		ASC
+	|	DESC
+	|	/*empty*/
+	;
+opt_top:
+		TOP int_literal
+	|	/*empty*/
+	;
+opt_limit:
+		LIMIT expr
+	| 	OFFSET expr
+	|	LIMIT expr
+	|	LIMIT ALL
+	|	LIMIT ALL OFFSET expr
+	|	/*empty*/
 	;
 delete_statement:
 		DELETE FROM table_name{
@@ -176,13 +244,40 @@ opt_where:
 		WHERE expr
 	|	/*empty*/
 	;
+table_ref:
+		table_ref_atomic
+	|	table_ref_commalist ',' table_ref_atomic
+	;
+table_ref_atomic:
+		nonjoin_table_ref_atomic
+  /*|	join_clause */
+	;
+nonjoin_table_ref_atomic:
+		table_ref_name
+	|	'(' select_statement ')' opt_table_alias
+	;
+table_ref_commalist:
+		table_ref_atomic
+	|	table_ref_commalist ',' table_ref_atomic
+	;
 table_ref_name_no_alias:
 		table_name
+	;
+table_ref_name:
+		table_name opt_table_alias
 	;
 table_name:
 		IDENTIFIER
 	|	IDENTIFIER '.' IDENTIFIER
 	;
+opt_table_alias:
+		table_alias
+	|	/*empty*/
+	;
+table_alias:
+		alias
+	;
+
 expr_list:
 		expr_alias
 	|	expr_list ',' expr_alias
